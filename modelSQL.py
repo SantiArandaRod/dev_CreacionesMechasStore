@@ -1,5 +1,4 @@
 
-from typing import Optional
 from datetime import datetime
 from sqlmodel import Field, SQLModel, create_engine, Session, select
 
@@ -42,7 +41,7 @@ class DetalleVenta(SQLModel, table=True):
 class Proveedor(SQLModel, table=True):
     nit: str = Field(default=None, primary_key=True)
     nombre: str
-    telefono: str
+    contacto: str
     direccion: str
     ciudad: str
 
