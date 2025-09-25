@@ -1,10 +1,12 @@
 annotated-types==0.7.0
 anyio==4.10.0
+asyncpg==0.30.0
 click==8.3.0
 fastapi==0.117.1
 greenlet==3.2.4
 h11==0.16.0
 idna==3.10
+psycopg2-binary==2.9.10
 pydantic==2.11.9
 pydantic_core==2.33.2
 python-dotenv==1.1.1
