@@ -23,19 +23,21 @@ class Cliente(SQLModel, table=True):
     telefono: str
     email: str
 
-
+    
 class Venta(SQLModel, table=True):
-    id_venta: int = Field(default=None, primary_key=True)
+    id_venta_pk: str = Field(primary_key=True)
     fecha: datetime
-    id_cliente: int = Field(foreign_key="cliente.id_cliente")
+    documento_fk: int = Field(foreign_key="cliente.documento_pk")
+    total: float
 
 
 class DetalleVenta(SQLModel, table=True):
-    id_detalle_venta: int = Field(default=None, primary_key=True)
-    id_venta: int = Field(foreign_key="venta.id_venta")
-    id_producto: str = Field(foreign_key="producto.id_producto")
+    id_detalleventa_pk: int = Field(primary_key=True)
+    id_venta_fk: str = Field(foreign_key="venta.id_venta_pk")
+    isbn_fk: str
     cantidad: int
     precio_unidad: float
+
 
 
 class Proveedor(SQLModel, table=True):
@@ -58,4 +60,6 @@ class DetalleCompra(SQLModel, table=True):
     id_producto: str = Field(foreign_key="producto.id_producto")
     cantidad: int
     precio_unidad: float
+
+
 

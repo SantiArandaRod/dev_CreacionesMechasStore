@@ -194,6 +194,13 @@ def obtener_todos_proveedores(session: Session, skip: int = 0, limit: int = 100)
     statement = select(Proveedor).offset(skip).limit(limit)
     return session.exec(statement).all()
 
+def obtener_proveedores_resumen(session: Session) -> List[dict]:
+    """Devuelve NIT, nombre y contacto de todos los proveedores"""
+    statement = select(Proveedor.nit, Proveedor.nombre, Proveedor.contacto)
+    resultados = session.exec(statement).all()
+    return [{"nit": r[0], "nombre": r[1], "contacto": r[2]} for r in resultados]
+
+
 # ===== VALIDACIONES ÚTILES =====
 def categoria_existe(session: Session, categoria_id: int) -> bool:
     """Verificar si una categoría existe"""

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mujer Creativa</title>
+      <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', path='css/styles.css') }}" >
+</head>
+<body>
+    <div id="clock-container">
+        <span id="clock-time"></span>
+        <span id="clock-date"></span>
+      </div>
+
+      <main>
+        {% block content %}{% endblock %}
+      </main>
+
+      <script src="{{ url_for('static', path='js/clock.js') }}"></script>
+</body>
+</html>

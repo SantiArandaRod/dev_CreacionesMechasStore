@@ -1,24 +1,40 @@
 
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Request
 from sqlmodel import Session
 from DBengine import get_session, init_db
 import operations as crud
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse
 
 app = FastAPI(title="Sistema de Inventario creaciones mechas - Backend Modular")
 
+# Configurar carpetas de frontend
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
+@app.get("/")
+def home(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 # Inicializar DB al arrancar
 @app.on_event("startup")
 def startup_event():
     init_db()
 
-
-# Endpoint básico de prueba
-@app.get("/")
-def root():
-    return {"message": "Backend corriendo correctamente"}
-
-
+@app.get("/proveedores/pagina")
+def pagina_proveedores(request: Request, session: Session = Depends(get_session)):
+    proveedores = crud.obtener_proveedores_resumen(session)
+    return templates.TemplateResponse(
+        "proveedores.html",
+        {"request": request, "proveedores": proveedores}
+    )
+@app.post("/proveedores/eliminar/{nit}")
+def eliminar_proveedor_html(nit: str, session: Session = Depends(get_session)):
+    """Elimina un proveedor y redirige a la página de proveedores."""
+    if crud.eliminar_proveedor(session, nit):
+        return RedirectResponse(url="/proveedores/pagina", status_code=303)
+    else:
+        raise HTTPException(status_code=404, detail="Proveedor no encontrado")
 # ===== ENDPOINTS CATEGORÍAS =====
 @app.post("/categorias/", status_code=status.HTTP_201_CREATED)
 def crear_categoria(categoria: dict, session: Session = Depends(get_session)):

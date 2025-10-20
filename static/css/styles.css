@@ -1,0 +1,223 @@
+/* Quita márgenes y ocupa toda la pantalla */
+html, body {
+  height: 100%;
+  margin: 0;
+  background-color: #fff;
+}
+
+body {
+  font-family: 'Lilita One', cursive;
+  position: relative;
+  background: url("/static/imagenes/logo-fondo.jpg") center center no-repeat;
+  background-size: contain;
+  min-height: 100vh;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* fondo adicional detrás */
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0; /* ocupa toda la pantalla */
+  background: url("/static/imagenes/fondo.png") center center / cover no-repeat;
+  z-index: -1;
+
+}
+
+/* Centrar contenido principal */
+main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Opcional: estilo del texto encima */
+main h1 {
+  color: #7a4e9b;
+  font-family: 'Poppins', sans-serif;
+  font-size: 2rem;
+}
+@media (max-width: 768px) {
+  body {
+    background-size: 90%; /* más grande en pantallas pequeñas */
+    background-position: top center;
+  }
+}
+/**menu button */
+.menu-container {
+  position: relative;
+  width: 150px;
+  height: 250px;
+  margin: 200px auto;
+}
+
+.menu-button {
+  font-family: 'Lilita One', cursive;
+  position: relative;
+  width: 150px;
+  height: 110px;
+  border-radius: 50%;
+  background-color: rgb(232, 116, 255);
+  color: white;
+  font-size: 18px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+}
+
+.menu-items {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translate(-80%, -80%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.4s ease;
+}
+
+.menu-item {
+  font-family: 'Lilita One', cursive;
+  position: absolute;
+  width: 100px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: rgb(232, 116, 255);
+  color: white;
+  border: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.4s ease;
+}
+
+.menu-container.active .menu-item {
+  opacity: 1;
+}
+
+.menu-container.active .menu-item:nth-child(1) { transform: rotate(0deg) translate(150px) rotate(0deg); }
+.menu-container.active .menu-item:nth-child(2) { transform: rotate(72deg) translate(150px) rotate(-72deg); }
+.menu-container.active .menu-item:nth-child(3) { transform: rotate(144deg) translate(150px) rotate(-144deg); }
+.menu-container.active .menu-item:nth-child(4) { transform: rotate(216deg) translate(150px) rotate(-216deg); }
+.menu-container.active .menu-item:nth-child(5) { transform: rotate(288deg) translate(150px) rotate(-288deg); }
+
+/*reloj */
+
+#clock-container {
+
+  position: fixed;
+  top: 50px;
+  right: 450px;
+  background-color: rgba(122, 78, 155, 0.8);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 15px;
+  font-family: 'Poppins', sans-serif;
+  text-align: right;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+#clock-time {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+#clock-date {
+  display: block;
+  font-size: 0.9rem;
+  margin-top: 2px;
+  opacity: 0.8;
+}
+
+/* Ajuste en móviles */
+@media (max-width: 768px) {
+  #clock-container {
+    top: 10px;
+    right: 10px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+}
+/*tabla proveedores */
+.titulo {
+  font-family: "Lilita One", cursive;
+  color: #7a4e9b;
+  margin-bottom: 20px;
+}
+
+.tabla-proveedores {
+  border-collapse: collapse;
+  width: 80%;
+  background-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tabla-proveedores th,
+.tabla-proveedores td {
+  padding: 15px;
+  text-align: center;
+  border-bottom: 1px solid #ccc;
+  font-family: "Poppins", sans-serif;
+}
+
+.tabla-proveedores th {
+  background-color: #c57aff;
+  color: white;
+}
+
+.btn-eliminar {
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: not-allowed; /* por ahora deshabilitado */
+}
+.button-container {
+  position: fixed;
+  width: 800px;
+  height: 550px;
+  margin: 200px auto;
+}
+.volver-button {
+  font-family: 'Lilita One', cursive;
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: rgb(232, 116, 255);
+  color: white;
+  font-size: 18px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+}
+.volver-button:hover {
+  background-color: #0056b3;
+}
+
+.alerta-exito {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  text-align: center;
+  font-weight: bold;
+}
