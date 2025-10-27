@@ -1,3 +1,4 @@
+from importlib import reload
 
 from fastapi import FastAPI, Depends, HTTPException, status, Request
 from sqlmodel import Session
@@ -21,20 +22,7 @@ def home(request: Request):
 def startup_event():
     init_db()
 
-@app.get("/proveedores/pagina")
-def pagina_proveedores(request: Request, session: Session = Depends(get_session)):
-    proveedores = crud.obtener_proveedores_resumen(session)
-    return templates.TemplateResponse(
-        "proveedores.html",
-        {"request": request, "proveedores": proveedores}
-    )
-@app.post("/proveedores/eliminar/{nit}")
-def eliminar_proveedor_html(nit: str, session: Session = Depends(get_session)):
-    """Elimina un proveedor y redirige a la página de proveedores."""
-    if crud.eliminar_proveedor(session, nit):
-        return RedirectResponse(url="/proveedores/pagina", status_code=303)
-    else:
-        raise HTTPException(status_code=404, detail="Proveedor no encontrado")
+
 # ===== ENDPOINTS CATEGORÍAS =====
 @app.post("/categorias/", status_code=status.HTTP_201_CREATED)
 def crear_categoria(categoria: dict, session: Session = Depends(get_session)):
@@ -256,6 +244,33 @@ def eliminar_cliente(cliente_id: int, session: Session = Depends(get_session)):
 
 
 # ===== ENDPOINTS PROVEEDORES =====
+@app.get("/proveedores/pagina")
+def pagina_proveedores(request: Request, session: Session = Depends(get_session)):
+    proveedores = crud.obtener_proveedores_resumen(session)
+    return templates.TemplateResponse(
+        "proveedores.html",
+        {"request": request, "proveedores": proveedores}
+    )
+@app.post("/proveedores/eliminar/{nit}")
+def eliminar_proveedor_html(nit: str, session: Session = Depends(get_session)):
+    """Elimina un proveedor y redirige a la página de proveedores."""
+    if crud.mover_proveedor(session,nit):
+        return RedirectResponse(url="/proveedores/pagina", status_code=303)
+    else:
+        raise HTTPException(status_code=404, detail="Proveedor no encontrado")
+
+@app.get("/proveedoresE/")
+def pagina_proveedores_eliminados(request: Request, session: Session = Depends(get_session)):
+    proveedores_eliminados=crud.obtener_proveedores_eliminados(session)
+    return templates.TemplateResponse(
+        "proveedores_eliminados.html",
+        {"request": request, "proveedores": proveedores_eliminados}
+    )
+@app.post("/proveedores/recuperar/{nit}")
+def recuperar_proveedor(nit: str, session: Session = Depends(get_session)):
+    exito = crud.recuperar_proveedor(session, nit)
+    return RedirectResponse(url="/proveedoresE/", status_code=303)
+
 @app.post("/proveedores/", status_code=status.HTTP_201_CREATED)
 def crear_proveedor(nit: str, nombre: str, contacto: str, direccion: str, ciudad: str,
                     session: Session = Depends(get_session)):
@@ -281,7 +296,21 @@ def obtener_proveedor(nit: str, session: Session = Depends(get_session)):
     if not proveedor:
         raise HTTPException(status_code=404, detail="Proveedor no encontrado")
     return proveedor
-
+@app.put("/proveedores/{nit}")
+def actualizar_proveedor(nit:str, nombre: str = None, direccion:str = None, ciudad:str = None, contacto:str = None,
+                         session: Session = Depends(get_session)):
+    """Actualizar un proveedor"""
+    proveedor= crud.actualizar_proveedor(session,nit,nombre,direccion,ciudad,contacto)
+    if not proveedor:
+        raise HTTPException(status_code=404, detail="Proveedor no encontrado")
+    return {"message": "Proveedor actualizado exitosamente", "proveedor": proveedor}
+@app.delete("/proveedores/{nit}")
+def eliminar_proveedor(nit:str, session: Session = Depends(get_session)):
+    """Eliminar proveedor"""
+    if crud.eliminar_proveedor(session,nit):
+        return {"message": "Proveedor eliminado exitosamente"}
+    else:
+        raise HTTPException(status_code=404, detail="Proveedor no encontrado")
 
 # ===== ENDPOINTS DE UTILIDAD =====
 @app.get("/verificar/categoria/{categoria_id}")
@@ -310,22 +339,8 @@ def verificar_stock_disponible(producto_id: str, cantidad: int, session: Session
         "stock_actual": stock_actual,
         "stock_suficiente": disponible
     }
-@app.put("/proveedores/{nit}")
-def actualizar_proveedor(nit:str, nombre: str = None, direccion:str = None, ciudad:str = None, contacto:str = None,
-                         session: Session = Depends(get_session)):
-    """Actualizar un proveedor"""
-    proveedor= crud.actualizar_proveedor(session,nit,nombre,direccion,ciudad,contacto)
-    if not proveedor:
-        raise HTTPException(status_code=404, detail="Proveedor no encontrado")
-    return {"message": "Proveedor actualizado exitosamente", "proveedor": proveedor}
-@app.delete("/proveedores/{nit}")
-def eliminar_proveedor(nit:str, session: Session = Depends(get_session)):
-    """Eliminar proveedor"""
-    if crud.eliminar_proveedor(session,nit):
-        return {"message": "Proveedor eliminado exitosamente"}
-    else:
-        raise HTTPException(status_code=404, detail="Proveedor no encontrado")
+
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000) --reload()
