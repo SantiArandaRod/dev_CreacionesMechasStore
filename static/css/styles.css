@@ -182,8 +182,12 @@ main h1 {
   border: none;
   padding: 6px 10px;
   border-radius: 6px;
-  cursor: not-allowed; /* por ahora deshabilitado */
+  cursor: pointer;
 }
+.btn-eliminar:hover {
+  background-color: #b52b27;
+}
+
 .button-container {
   position: fixed;
   width: 800px;
