@@ -21,10 +21,12 @@
         <td>{{ proveedor.nombre }}</td>
         <td>{{ proveedor.contacto }}</td>
         <td>
-          <form action="/proveedores/eliminar/{{ proveedor.nit }}" method="post" style="display:inline;">
-            <button type="submit" class="btn-eliminar">Eliminar</button>
-          </form>
-        </td>
+  <form action="/proveedores/eliminar/{{ proveedor.nit }}" method="post" style="display:inline;">
+    <button type="submit" class="btn-eliminar" onclick="console.log('Click detectado'); return true;">
+      Eliminar
+    </button>
+  </form>
+</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -33,6 +35,10 @@
   <div class="button-container">
     <button class="volver-button" id="volverbutton" onclick="window.location.href='/'">Inicio</button>
   </div>
+<div class="button-container-2">
+  <button class="eliminados-button" onclick="window.location.href='/proveedoresE/'">
+    Eliminados
+  </button>
+</div>
 
-</main>
 {% endblock %}
