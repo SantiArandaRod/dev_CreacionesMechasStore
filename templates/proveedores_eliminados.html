@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<main>
+
+  <h1 class="titulo">Proveedores Eliminados</h1>
+
+  <table class="tabla-proveedores">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Contacto</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for proveedor in proveedores %}
+      <tr>
+        <td>{{ proveedor.nombre }}</td>
+        <td>{{ proveedor.contacto }}</td>
+        <td>
+          <form action="/proveedores/recuperar/{{ proveedor.nit }}" method="post" style="display:inline;">
+            <button type="submit" class="btn-recuperar">Recuperar</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="button-container">
+    <button class="volver-button" onclick="window.location.href='/'">Inicio</button>
+  </div>
+
+</main>
+{% endblock %}
