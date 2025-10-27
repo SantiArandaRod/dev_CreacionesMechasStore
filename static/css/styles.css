@@ -187,12 +187,25 @@ main h1 {
 .btn-eliminar:hover {
   background-color: #b52b27;
 }
+.btn-recuperar {
+  background-color: #2F9C07;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.btn-recuperar:hover {
+  background-color: #000000;
+}
 
 .button-container {
   position: fixed;
-  width: 800px;
-  height: 550px;
-  margin: 200px auto;
+  bottom: 20px;  /* posiciona el botón abajo */
+  left: 20px;    /* y a la izquierda */
+  width: auto;   /* solo el tamaño del botón */
+  height: auto;
+  z-index: 10;   /* por encima de otros elementos */
 }
 .volver-button {
   font-family: 'Lilita One', cursive;
@@ -214,6 +227,56 @@ main h1 {
 }
 .volver-button:hover {
   background-color: #0056b3;
+}
+.button-container-2 {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: auto;
+  height: auto;
+  z-index: 10;
+}
+
+.eliminados-button {
+  font-family: 'Lilita One', cursive;
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: rgb(232, 116, 255);
+  color: white;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+}
+
+.eliminados-button:hover {
+  background-color: #0056b3;
+}
+.volver-top {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color: rgb(232, 116, 255);
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-family: 'Lilita One', cursive;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 10;
+  transition: background-color 0.2s ease;
+}
+
+.volver-top:hover {
+  background-color: #7a4e9b;
 }
 
 .alerta-exito {
