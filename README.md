@@ -1,21 +1,20 @@
 
 # Creaciones Mechas
 
-A brief description of what this project does and who it's for
-
+This project is a simple inventory system for a minimarket, in which products, suppliers, sales, purchases, stock, customers, are many managed.
 
 ![Logo](link)
 
 
 ## Authors
 
-- [@octokatherine](https://www.github.com/octokatherine)
+- [@SantiArandaRod](https://www.github.com/SantiArandaRod)
+- [@Danielfpg](https://www.github.com/Danielfpg)
 
 
 ## Lessons Learned
 
-What did you learn while building this project? What challenges did you face and how did you overcome them?
-
+We learned to work as a team, manage versions, branches, and styles in Git.
 
 ## Documentation
 
@@ -27,25 +26,25 @@ What did you learn while building this project? What challenges did you face and
 Clone the project
 
 ```bash
-  git clone https://link-to-project
+  git clone https://link-to-project](https://github.com/SantiArandaRod/dev_CreacionesMechasStore)
 ```
 
 Go to the project directory
 
 ```bash
-  cd my-project
+  cd dev_CreacionesMechasStore
 ```
 
-Install dependencies
+Install requirements
 
 ```bash
-  npm install
+  pip install -r requirements.txt
 ```
 
 Start the server
 
 ```bash
-  npm run start
+  uvicorn main:app
 ```
 
 
@@ -60,16 +59,11 @@ Here are some related projects
 
 This project is used by the following companies:
 
-- Company 1
-- Company 2
+- Creaciones Mechas
 
 
 ## Feedback
 
-If you have any feedback, please reach out to us at fake@fake.com
-
-
-## Support
-
-For support, email fake@fake.com or join our Slack channel.
-
+If you have any feedback, please reach out to us at 
+- davids.arandar@gmail.com
+- 
