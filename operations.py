@@ -1,7 +1,11 @@
 
-from sqlmodel import Session, select
-from typing import List, Optional
-from modelSQL import Categoria, Producto, Cliente, Venta, DetalleVenta, Proveedor, Compra, DetalleCompra
+import fastapi
+from typing import List, Optional, Any, Sequence
+
+from sqlalchemy import false
+from starlette import status
+
+from modelSQL import *
 
 def crear_categoria(session: Session, tipo: str, codigo: str) -> Categoria:
     """Crear una nueva categoría"""
@@ -194,12 +198,65 @@ def obtener_todos_proveedores(session: Session, skip: int = 0, limit: int = 100)
     statement = select(Proveedor).offset(skip).limit(limit)
     return session.exec(statement).all()
 
-def obtener_proveedores_resumen(session: Session) -> List[dict]:
-    """Devuelve NIT, nombre y contacto de todos los proveedores"""
-    statement = select(Proveedor.nit, Proveedor.nombre, Proveedor.contacto)
-    resultados = session.exec(statement).all()
-    return [{"nit": r[0], "nombre": r[1], "contacto": r[2]} for r in resultados]
+def obtener_proveedores_resumen(session: Session) -> List[Proveedor]:
+    return session.exec(select(Proveedor)).all()
 
+def mover_proveedor(session: Session, nit: str) -> bool:
+    """Mueve un proveedor a otra tabla como backup"""
+    proveedor = session.get(Proveedor, nit)
+    if not proveedor:
+        return False
+
+    proveedor_backup = ProveedorBackup(
+        nit=proveedor.nit,
+        nombre=proveedor.nombre,
+        direccion=proveedor.direccion,
+        ciudad=proveedor.ciudad,
+        contacto=proveedor.contacto
+    )
+
+    session.add(proveedor_backup)
+    session.delete(proveedor)
+    session.commit()
+
+    return True
+def obtener_proveedores_eliminados(session: Session) -> List[ProveedorBackup]:
+    """Obtener todos los proveedores eliminados"""
+    return session.exec(select(ProveedorBackup)).all()
+
+
+def recuperar_proveedor(session: Session, nit: str) -> bool:
+    proveedor_backup = session.get(ProveedorBackup, nit)
+    if not proveedor_backup:
+        return False
+    proveedor=Proveedor(
+        nit=proveedor_backup.nit,
+        nombre=proveedor_backup.nombre,
+        direccion=proveedor_backup.direccion,
+        ciudad=proveedor_backup.ciudad,
+        contacto=proveedor_backup.contacto
+    )
+
+    session.add(proveedor)
+    session.delete(proveedor_backup)
+    session.commit()
+    return True
+
+def actualizar_proveedor(session: Session,nit:str,nombre: str = None, direccion:str = None, ciudad:str = None, contacto:str = None) -> Optional[Proveedor]:
+    """Actualizar un proveedor"""
+    proveedor= session.get(Proveedor,nit)
+    if proveedor:
+        if nombre is not None:
+            proveedor.nombre = nombre
+        if direccion is not None:
+            proveedor.direccion = direccion
+        if ciudad is not None:
+            proveedor.ciudad = ciudad
+        if contacto is not None:
+            proveedor.contacto = contacto
+        session.commit()
+        session.refresh(proveedor)
+    return proveedor
 
 # ===== VALIDACIONES ÚTILES =====
 def categoria_existe(session: Session, categoria_id: int) -> bool:
@@ -225,26 +282,3 @@ def verificar_stock_disponible(session: Session, producto_id: str, cantidad_requ
         return producto.stock >= cantidad_requerida
     return False
 
-def actualizar_proveedor(session: Session,nit:str,nombre: str = None, direccion:str = None, ciudad:str = None, contacto:str = None) -> Optional[Proveedor]:
-    """Actualizar un proveedor"""
-    proveedor= session.get(Proveedor,nit)
-    if proveedor:
-        if nombre is not None:
-            proveedor.nombre = nombre
-        if direccion is not None:
-            proveedor.direccion = direccion
-        if ciudad is not None:
-            proveedor.ciudad = ciudad
-        if contacto is not None:
-            proveedor.contacto = contacto
-        session.commit()
-        session.refresh(proveedor)
-    return proveedor
-def eliminar_proveedor(session: Session,nit:str) -> bool:
-    """Eliminar proveedor"""
-    proveedor = session.get(Proveedor,nit)
-    if proveedor:
-        session.delete(proveedor)
-        session.commit()
-        return True
-    return False
