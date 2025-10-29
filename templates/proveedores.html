@@ -31,8 +31,44 @@
   </table>
 
   <div class="button-container">
-    <button class="volver-button" id="volverbutton" onclick="window.location.href='/'">Inicio</button>
+    <button class="volver-button" id="volverbutton" onclick="window.location.href='/'">Atrás</button>
+  </div>
+ <div class="button-container-agregar">
+    <button class="agregar-button" id="abrirModal">Agregar</button>
+
+    <!-- 🪟 Modal para agregar proveedor -->
+    <div id="modalOverlay" class="overlay">
+      <div class="modal-contenido">
+        <h2>Agregar Proveedor</h2>
+
+        <form id="formProveedor" class="form-modal">
+          <label for="nit">NIT:</label>
+          <input type="text" id="nit" name="nit" required>
+
+          <label for="nombre">Nombre:</label>
+          <input type="text" id="nombre" name="nombre" required>
+
+          <label for="contacto">Contacto:</label>
+          <input type="text" id="contacto" name="contacto" required>
+
+          <label for="direccion">Dirección:</label>
+          <input type="text" id="direccion" name="direccion" required>
+
+          <label for="ciudad">Ciudad:</label>
+          <input type="text" id="ciudad" name="ciudad" required>
+
+          <div class="modal-botones">
+            <button type="submit" class="btn-guardar">Guardar</button>
+            <button type="button" id="cerrarModal" class="btn-cancelar">Cancelar</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
   </div>
 
 </main>
+
+      <script src="{{ url_for('static', path='js/modal.js') }}"></script>
+
 {% endblock %}

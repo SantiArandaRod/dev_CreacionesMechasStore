@@ -2,7 +2,7 @@
 from sqlmodel import Session, select
 from typing import List, Optional
 from modelSQL import Categoria, Producto, Cliente, Venta, DetalleVenta, Proveedor, Compra, DetalleCompra
-
+"""CATEGORIA"""
 def crear_categoria(session: Session, tipo: str, codigo: str) -> Categoria:
     """Crear una nueva categoría"""
     categoria = Categoria(tipo=tipo, codigo=codigo)
@@ -40,7 +40,7 @@ def eliminar_categoria(session: Session, categoria_id: int) -> bool:
         session.commit()
         return True
     return False
-
+"""PRODUCTO"""
 def crear_producto(session: Session, id_producto: str, nombre: str, precio: float, stock: int, id_categoria: int) -> Producto:
     """Crear un nuevo producto"""
     producto = Producto(
@@ -124,7 +124,7 @@ def eliminar_producto(session: Session, producto_id: str) -> bool:
         session.commit()
         return True
     return False
-
+"""CLIENTES"""
 def crear_cliente(session: Session, nombre: str, telefono: str, email: str) -> Cliente:
     """Crear un nuevo cliente"""
     cliente = Cliente(nombre=nombre, telefono=telefono, email=email)
@@ -169,7 +169,7 @@ def eliminar_cliente(session: Session, cliente_id: int) -> bool:
         session.commit()
         return True
     return False
-
+"""PROVEEDORES"""
 def crear_proveedor(session: Session, nit: str, nombre: str,  direccion: str, ciudad: str,contacto: str) -> Proveedor:
     """Crear un nuevo proveedor"""
     print(123)

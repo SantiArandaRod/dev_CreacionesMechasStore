@@ -1,4 +1,18 @@
 /* Quita márgenes y ocupa toda la pantalla */
+.titulo {
+  font-family: "Lilita One", cursive;
+  color: #7a4e9b;
+  background-color: rgba(255, 171, 206, 0.82);
+  padding: 12px 25px;
+  border-radius: 25px;
+  margin-bottom: 20px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  display: inline-block !important;
+  position: relative;
+  z-index: 5;
+}
+
 html, body {
   height: 100%;
   margin: 0;
@@ -12,19 +26,21 @@ body {
   background-size: contain;
   min-height: 100vh;
   margin: 0;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* fondo adicional detrás */
-body::before {
+main::before {
   content: "";
-  position: absolute;
-  inset: 0; /* ocupa toda la pantalla */
+  position: fixed; /* 👈 esto hace que el fondo quede fijo al hacer scroll */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: url("/static/imagenes/fondo.png") center center / cover no-repeat;
   z-index: -1;
-
 }
-
 /* Centrar contenido principal */
 main {
   min-height: 100vh;
@@ -34,19 +50,28 @@ main {
   align-items: center;
 }
 
-/* Opcional: estilo del texto encima */
+/* Estilo general de títulos */
+
+
+/* Ajuste del texto de h1 en main */
 main h1 {
-  color: #7a4e9b;
-  font-family: 'Poppins', sans-serif;
   font-size: 2rem;
+  margin: 0;
 }
+
 @media (max-width: 768px) {
   body {
-    background-size: 90%; /* más grande en pantallas pequeñas */
+    background-size: 90%;
     background-position: top center;
   }
+
+  .titulo {
+    font-size: 1.5rem;
+    padding: 10px 20px;
+  }
 }
-/**menu button */
+
+/* ===== MENÚ CIRCULAR ===== */
 .menu-container {
   position: relative;
   width: 150px;
@@ -108,10 +133,8 @@ main h1 {
 .menu-container.active .menu-item:nth-child(4) { transform: rotate(216deg) translate(150px) rotate(-216deg); }
 .menu-container.active .menu-item:nth-child(5) { transform: rotate(288deg) translate(150px) rotate(-288deg); }
 
-/*reloj */
-
+/* ===== RELOJ ===== */
 #clock-container {
-
   position: fixed;
   top: 50px;
   right: 450px;
@@ -138,7 +161,6 @@ main h1 {
   opacity: 0.8;
 }
 
-/* Ajuste en móviles */
 @media (max-width: 768px) {
   #clock-container {
     top: 10px;
@@ -147,17 +169,12 @@ main h1 {
     font-size: 0.9rem;
   }
 }
-/*tabla proveedores */
-.titulo {
-  font-family: "Lilita One", cursive;
-  color: #7a4e9b;
-  margin-bottom: 20px;
-}
 
+/* ===== TABLA DE PROVEEDORES ===== */
 .tabla-proveedores {
   border-collapse: collapse;
   width: 80%;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.9);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   border-radius: 12px;
   overflow: hidden;
@@ -182,14 +199,24 @@ main h1 {
   border: none;
   padding: 6px 10px;
   border-radius: 6px;
-  cursor: not-allowed; /* por ahora deshabilitado */
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
+
+.btn-eliminar:hover {
+  background-color: #c9302c;
+}
+
+/* ===== BOTÓN VOLVER ===== */
 .button-container {
   position: fixed;
   width: 800px;
-  height: 550px;
+  height: 150px;
+  top: 50px;
+  left: 550px;
   margin: 200px auto;
 }
+
 .volver-button {
   font-family: 'Lilita One', cursive;
   position: relative;
@@ -201,17 +228,48 @@ main h1 {
   font-size: 18px;
   border: none;
   cursor: pointer;
-  transition: transform 0.1s ease;
+  transition: transform 0.1s ease, background-color 0.3s;
   z-index: 2;
   display: flex;
   justify-content: center;
   align-items: center;
   user-select: none;
 }
-.volver-button:hover {
-  background-color: #0056b3;
-}
 
+.volver-button:hover {
+  background-color: #a94fff;
+}
+/* ===== AGREGAR ===== */
+.button-container-agregar {
+  position: fixed;
+  width: 800px;
+  height: 550px;
+  margin: 200px auto;
+  top: 50px;
+  right: -150px;
+}
+.agregar-button {
+  font-family: 'Lilita One', cursive;
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: rgb(232, 116, 255);
+  color: white;
+  font-size: 18px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.1s ease, background-color 0.3s;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+}
+.agregar-button:hover {
+  background-color: #a94fff;
+}
+/* ===== MENSAJE DE ÉXITO ===== */
 .alerta-exito {
   background-color: #d4edda;
   color: #155724;
@@ -221,3 +279,90 @@ main h1 {
   text-align: center;
   font-weight: bold;
 }
+/* ===== MODAL AGREGAR PROVEEDOR ===== */
+.overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+}
+
+.modal-contenido {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 30px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  font-family: 'Lilita One', cursive;
+  animation: aparecer 0.3s ease;
+}
+
+.modal-contenido h2 {
+  color: #7a4e9b;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.form-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-modal label {
+  font-size: 16px;
+  color: #7a4e9b;
+}
+
+.form-modal input {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-family: 'Poppins', sans-serif;
+}
+
+.modal-botones {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 15px;
+}
+
+.btn-guardar, .btn-cancelar {
+  font-family: 'Lilita One', cursive;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.btn-guardar {
+  background-color: rgb(232, 116, 255);
+  color: white;
+}
+
+.btn-guardar:hover {
+  background-color: #a94fff;
+}
+
+.btn-cancelar {
+  background-color: #d9534f;
+  color: white;
+}
+
+.btn-cancelar:hover {
+  background-color: #c9302c;
+}
+
+@keyframes aparecer {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
