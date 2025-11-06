@@ -1,69 +1,91 @@
 
 # Creaciones Mechas
 
-This project is a simple inventory system for a minimarket, in which products, suppliers, sales, purchases, stock, customers, are many managed.
+A simple **inventory management system** for a local minimarket.  
+It allows managing **products, suppliers, sales, purchases, stock, and customers** efficiently through a clean and functional interface.
 
-![Logo](link)
+![Logo](https://link-to-your-logo.png)
 
+---
+
+## Features
+
+- Manage products, suppliers, and customers.
+- Track purchases, sales, and stock.
+- View and update inventory in real time.
+- Clean, fast, and easy-to-use interface built with **FastAPI** and **SQLModel**.
+
+---
 
 ## Authors
 
-- [@SantiArandaRod](https://www.github.com/SantiArandaRod)
-- [@Danielfpg](https://www.github.com/Danielfpg)
+- [@SantiArandaRod](https://github.com/SantiArandaRod)
+- [@Danielfpg](https://github.com/Danielfpg)
 
+---
 
 ## Lessons Learned
 
-We learned to work as a team, manage versions, branches, and styles in Git.
+- Team collaboration with Git and GitHub.
+- Branching strategies and version control.
+- API design using FastAPI.
+- Code style standardization and documentation writing.
 
-## Documentation
+---
 
-[Documentation](https://linktodocumentation)
+## Tech Stack
 
+**Backend:** FastAPI, SQLModel  
+**Database:** Supabase / PostgreSQL  
+**Frontend:** HTML, CSS (Jinja templates)  
+**Other tools:** Git, Uvicorn
+
+---
 
 ## Run Locally
 
-Clone the project
+Clone the repository:
 
 ```bash
-  git clone https://link-to-project](https://github.com/SantiArandaRod/dev_CreacionesMechasStore)
+git clone https://github.com/SantiArandaRod/dev_CreacionesMechasStore.git
 ```
-
-Go to the project directory
-
+Enter the project directory:
 ```bash
-  cd dev_CreacionesMechasStore
+cd dev_CreacionesMechasStore
 ```
-
-Install requirements
-
+Install dependencies:
 ```bash
-  pip install -r requirements.txt
+pip install -r requirements.txt
 ```
-
-Start the server
-
+Start the development server:
 ```bash
-  uvicorn main:app
+uvicorn main:app --reload
 ```
 
+Then open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser.
 
-## Related
+---
 
-Here are some related projects
+## Documentation
 
-[Awesome README](https://github.com/matiassingers/awesome-readme)
+See the [Project Documentation](https://linktodocumentation) for API endpoints and database schema.
 
+---
+
+## Related Projects
+
+- [Awesome README Example](https://github.com/SantiArandaRod/dev_project)
+
+---
 
 ## Used By
 
-This project is used by the following companies:
+This system will be used by **Creaciones Mechas** (local minimarket).
 
-- Creaciones Mechas
-
+---
 
 ## Feedback
 
-If you have any feedback, please reach out to us at 
-- davids.arandar@gmail.com
-- 
+If you have any feedback or suggestions, please reach out:
+
+- [davids.arandar@gmail.com](mailto:davids.arandar@gmail.com)
