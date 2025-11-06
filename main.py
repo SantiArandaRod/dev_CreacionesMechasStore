@@ -1,5 +1,4 @@
 from importlib import reload
-
 from fastapi import FastAPI, Depends, HTTPException, status, Request
 from sqlmodel import Session
 from DBengine import get_session, init_db
@@ -8,11 +7,12 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 
-app = FastAPI(title="Sistema de Inventario creaciones mechas - Backend Modular")
+app = FastAPI(title="Sistema de Inventario de Creaciones Mechasz")
 
-# Configurar carpetas de frontend
+### Set de frontend
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
+### Home Page
 @app.get("/")
 def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
@@ -56,7 +56,7 @@ def obtener_categoria(categoria_id: int, session: Session = Depends(get_session)
     return categoria
 
 
-@app.put("/categorias/{categoria_id}")
+@app.patch("/categorias/{categoria_id}")
 def actualizar_categoria(categoria_id: int, nombre: str = None, codigo: str = None,
                          session: Session = Depends(get_session)):
     """Actualizar una categoría"""
@@ -91,11 +91,42 @@ def crear_producto(id_producto: str, nombre: str, precio: float, stock: int, id_
         raise HTTPException(status_code=400, detail=f"Error creando producto: {str(e)}")
 
 
+
 @app.get("/productos/")
 def obtener_productos(skip: int = 0, limit: int = 100, session: Session = Depends(get_session)):
-    """Obtener todos los productos"""
     productos = crud.obtener_todos_productos(session, skip, limit)
     return {"productos": productos, "total": len(productos)}
+
+@app.get("/productos/pagina")
+def pagina_productos(request: Request, session: Session = Depends(get_session)):
+    """Renderiza la página de productos con todos los datos precargados."""
+    productos = crud.obtener_todos_productos(session)
+    categorias = crud.obtener_todas_categorias(session)
+
+    # Mapeo de categorías para obtener el nombre fácilmente
+    categorias_dict = {c.id_categoria: c.tipo for c in categorias}
+
+    # Adaptamos los productos para que incluyan el nombre de la categoría
+    productos_lista = [
+        {
+            "id_producto": p.id_producto,
+            "nombre": p.nombre,
+            "precio": p.precio,
+            "stock": p.stock,
+            "id_categoria": p.id_categoria,
+            "categoria_nombre": categorias_dict.get(p.id_categoria, "Sin categoría")
+        }
+        for p in productos
+    ]
+
+    return templates.TemplateResponse(
+        "productos.html",
+        {
+            "request": request,
+            "productos": productos_lista,
+            "categorias": categorias
+        }
+    )
 
 
 @app.get("/productos/{producto_id}")
@@ -136,10 +167,10 @@ def actualizar_producto(
         raise HTTPException(status_code=404, detail="Producto no encontrado")
     return {"message": "Producto actualizado exitosamente", "producto": producto}
 
-
+#STOCK PRODUCTOS
 @app.put("/productos/{producto_id}/stock")
 def actualizar_stock_producto(producto_id: str, nueva_cantidad: int, session: Session = Depends(get_session)):
-    """Actualizar el stock de un producto"""
+    """Actualizar el stock de un producto, sea cual sea"""
     if nueva_cantidad < 0:
         raise HTTPException(status_code=400, detail="La cantidad no puede ser negativa")
 
@@ -311,6 +342,15 @@ def eliminar_proveedor(nit:str, session: Session = Depends(get_session)):
         return {"message": "Proveedor eliminado exitosamente"}
     else:
         raise HTTPException(status_code=404, detail="Proveedor no encontrado")
+# ===== ENDPOINTS DE VENTAS =====
+@app.get("/ventas/pagina")
+def pagina_ventas(request: Request):
+    return templates.TemplateResponse("ventas.html", {"request": request})
+
+# ===== ENDPOINTS DE COMPRAS =====
+@app.get("/compras/pagina")
+def pagina_compras(request: Request):
+    return templates.TemplateResponse("compras.html", {"request": request})
 
 # ===== ENDPOINTS DE UTILIDAD =====
 @app.get("/verificar/categoria/{categoria_id}")
@@ -340,7 +380,5 @@ def verificar_stock_disponible(producto_id: str, cantidad: int, session: Session
         "stock_suficiente": disponible
     }
 
-if __name__ == "__main__":
-    import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000) --reload()
+
