@@ -1,5 +1,6 @@
 annotated-types==0.7.0
 anyio==4.10.0
+asyncio==4.0.0
 asyncpg==0.30.0
 click==8.3.0
 fastapi==0.117.1
