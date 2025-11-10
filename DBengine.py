@@ -1,30 +1,28 @@
 import os
 from dotenv import load_dotenv
-from sqlmodel import SQLModel, create_engine, Session
-
-# Cargar variables de entorno
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from sqlmodel import SQLModel
+from typing import AsyncGenerator
 load_dotenv()
 
-# Intentar obtener la URL desde .env
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Si no existe, usar SQLite local por defecto
-if not DATABASE_URL:
-    print("⚠️ No se detectó DATABASE_URL, usando base de datos local SQLite.")
-    DATABASE_URL = "sqlite:///./local_test.db"
-
-# Crear el engine
-engine = create_engine(
+async_engine = create_async_engine(
     DATABASE_URL,
     echo=True,
-    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+    future=True,
+)
+AsyncSessionLocal = sessionmaker(
+    bind=async_engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
 )
 
-# Crear todas las tablas definidas por tus modelos
-def init_db():
-    SQLModel.metadata.create_all(engine)
+async def init_db():
+    async with async_engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
 
-# Generador de sesión (para FastAPI)
-def get_session():
-    with Session(engine) as session:
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
+    async with AsyncSessionLocal() as session:
         yield session
