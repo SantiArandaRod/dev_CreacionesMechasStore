@@ -1,18 +1,4 @@
-/* Quita márgenes y ocupa toda la pantalla */
-.titulo {
-  font-family: "Lilita One", cursive;
-  color: #7a4e9b;
-  background-color: rgba(255, 171, 206, 0.82);
-  padding: 12px 25px;
-  border-radius: 25px;
-  margin-bottom: 20px;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  display: inline-block !important;
-  position: relative;
-  z-index: 5;
-}
-
+/* ===== ESTRUCTURA GENERAL ===== */
 html, body {
   height: 100%;
   margin: 0;
@@ -25,23 +11,20 @@ body {
   background: url("/static/imagenes/logo-fondo.jpg") center center no-repeat;
   background-size: contain;
   min-height: 100vh;
-  margin: 0;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
-/* fondo adicional detrás */
-main::before {
+/* Fondo adicional detrás */
+body::before {
   content: "";
-  position: fixed; /* 👈 esto hace que el fondo quede fijo al hacer scroll */
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  position: fixed;
+  inset: 0;
   background: url("/static/imagenes/fondo.png") center center / cover no-repeat;
   z-index: -1;
 }
-/* Centrar contenido principal */
+
+/* ===== CONTENIDO PRINCIPAL ===== */
 main {
   min-height: 100vh;
   display: flex;
@@ -50,10 +33,20 @@ main {
   align-items: center;
 }
 
-/* Estilo general de títulos */
+.titulo {
+  font-family: "Lilita One", cursive;
+  color: #7a4e9b;
+  background-color: rgba(255, 171, 206, 0.82);
+  padding: 12px 25px;
+  border-radius: 25px;
+  margin-bottom: 20px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  display: inline-block;
+  position: relative;
+  z-index: 5;
+}
 
-
-/* Ajuste del texto de h1 en main */
 main h1 {
   font-size: 2rem;
   margin: 0;
@@ -64,7 +57,6 @@ main h1 {
     background-size: 90%;
     background-position: top center;
   }
-
   .titulo {
     font-size: 1.5rem;
     padding: 10px 20px;
@@ -207,19 +199,29 @@ main h1 {
   background-color: #c9302c;
 }
 
-/* ===== BOTÓN VOLVER ===== */
+.btn-recuperar {
+  background-color: #2F9C07;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-recuperar:hover {
+  background-color: #000000;
+}
+
+/* ===== BOTONES DE NAVEGACIÓN ===== */
 .button-container {
   position: fixed;
-  width: 800px;
-  height: 150px;
-  top: 50px;
-  left: 550px;
-  margin: 200px auto;
+  bottom: 20px;
+  left: 20px;
+  z-index: 10;
 }
 
 .volver-button {
   font-family: 'Lilita One', cursive;
-  position: relative;
   width: 100px;
   height: 100px;
   border-radius: 50%;
@@ -229,7 +231,6 @@ main h1 {
   border: none;
   cursor: pointer;
   transition: transform 0.1s ease, background-color 0.3s;
-  z-index: 2;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -239,18 +240,16 @@ main h1 {
 .volver-button:hover {
   background-color: #a94fff;
 }
-/* ===== AGREGAR ===== */
+
 .button-container-agregar {
   position: fixed;
-  width: 800px;
-  height: 550px;
-  margin: 200px auto;
-  top: 50px;
-  right: -150px;
+  bottom: 20px;
+  right: 150px;
+  z-index: 10;
 }
+
 .agregar-button {
   font-family: 'Lilita One', cursive;
-  position: relative;
   width: 100px;
   height: 100px;
   border-radius: 50%;
@@ -260,15 +259,62 @@ main h1 {
   border: none;
   cursor: pointer;
   transition: transform 0.1s ease, background-color 0.3s;
-  z-index: 2;
   display: flex;
   justify-content: center;
   align-items: center;
-  user-select: none;
 }
+
 .agregar-button:hover {
   background-color: #a94fff;
 }
+
+.button-container-2 {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 10;
+}
+
+.eliminados-button {
+  font-family: 'Lilita One', cursive;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: rgb(232, 116, 255);
+  color: white;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.1s ease, background-color 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.eliminados-button:hover {
+  background-color: #a94fff;
+}
+
+.volver-top {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color: rgb(232, 116, 255);
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-family: 'Lilita One', cursive;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 10;
+  transition: background-color 0.2s ease;
+}
+
+.volver-top:hover {
+  background-color: #7a4e9b;
+}
+
 /* ===== MENSAJE DE ÉXITO ===== */
 .alerta-exito {
   background-color: #d4edda;
@@ -279,6 +325,7 @@ main h1 {
   text-align: center;
   font-weight: bold;
 }
+
 /* ===== MODAL AGREGAR PROVEEDOR ===== */
 .overlay {
   position: fixed;
@@ -365,4 +412,3 @@ main h1 {
   from { transform: scale(0.8); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
-

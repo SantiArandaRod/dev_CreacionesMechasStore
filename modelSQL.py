@@ -45,6 +45,13 @@ class Proveedor(SQLModel, table=True):
     direccion: str
     ciudad: str
 
+class ProveedorBackup(SQLModel, table=True):
+    nit: str = Field(default=None, primary_key=True)
+    nombre: str
+    contacto: str
+    direccion: str
+    ciudad: str
+
 
 class ProveedorBackup(SQLModel, table=True):
     nit: str = Field(default=None, primary_key=True)

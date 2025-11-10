@@ -14,7 +14,7 @@ async def lifespan(app: FastAPI):
     await init_db()
     yield
 
-app = FastAPI(lifespan=lifespan, title="Sistema de Inventario - Creaciones Mechas (Async)")
+app = FastAPI(lifespan=lifespan, title="Sistema de Inventario - Creaciones Mechas")
 
 # === CONFIGURACIÓN DE FRONTEND ===
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -24,6 +24,7 @@ templates = Jinja2Templates(directory="templates")
 @app.get("/")
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
 
 # === PÁGINAS HTML ===
 @app.get("/proveedores/pagina")
@@ -36,7 +37,6 @@ async def pagina_productos(request: Request, session: AsyncSession = Depends(get
     productos = await crud.obtener_todos_productos(session)
     categorias = await crud.obtener_todas_categorias(session)
     categorias_dict = {c.id_categoria: c.tipo for c in categorias}
-
     productos_lista = [
         {
             "id_producto": p.id_producto,
@@ -62,6 +62,7 @@ async def pagina_ventas(request: Request):
 async def pagina_compras(request: Request):
     return templates.TemplateResponse("compras.html", {"request": request})
 
+
 # === CRUD DE CATEGORÍAS ===
 @app.post("/categorias/", status_code=status.HTTP_201_CREATED)
 async def crear_categoria(tipo: str = Form(...), codigo: str = Form(...), session: AsyncSession = Depends(get_session)):
@@ -84,6 +85,7 @@ async def eliminar_categoria(categoria_id: int, session: AsyncSession = Depends(
         return {"message": "Categoría eliminada"}
     raise HTTPException(status_code=404, detail="Categoría no encontrada")
 
+
 # === CRUD DE PRODUCTOS ===
 @app.post("/productos/", status_code=status.HTTP_201_CREATED)
 async def crear_producto(
@@ -96,7 +98,6 @@ async def crear_producto(
 ):
     if not await crud.categoria_existe(session, id_categoria):
         raise HTTPException(status_code=400, detail="Categoría no válida")
-
     try:
         producto = await crud.crear_producto(session, id_producto, nombre, precio, stock, id_categoria)
         return {"message": "Producto creado correctamente", "producto": producto}
@@ -126,6 +127,7 @@ async def eliminar_producto(producto_id: str, session: AsyncSession = Depends(ge
         return {"message": "Producto eliminado"}
     raise HTTPException(status_code=404, detail="Producto no encontrado")
 
+
 # === MANEJO DE STOCK ===
 @app.put("/productos/{producto_id}/stock")
 async def actualizar_stock(producto_id: str, nueva_cantidad: int, session: AsyncSession = Depends(get_session)):
@@ -136,29 +138,27 @@ async def actualizar_stock(producto_id: str, nueva_cantidad: int, session: Async
         raise HTTPException(status_code=404, detail="Producto no encontrado")
     return {"message": f"Stock actualizado: {nueva_cantidad}", "producto": producto}
 
-# === FILTRAR PRODUCTOS POR CATEGORÍA ===
-@app.get("/productos/categoria/{categoria_id}")
-async def obtener_productos_por_categoria(categoria_id: int, session: AsyncSession = Depends(get_session)):
-    if categoria_id == 0:
-        productos = await crud.obtener_todos_productos(session)
-    else:
-        if not await crud.categoria_existe(session, categoria_id):
-            raise HTTPException(status_code=404, detail="Categoría no encontrada")
-        productos = await crud.obtener_productos_por_categoria(session, categoria_id)
 
-    categorias = {c.id_categoria: c.tipo for c in await crud.obtener_todas_categorias(session)}
-    productos_lista = [
-        {
-            "id_producto": p.id_producto,
-            "nombre": p.nombre,
-            "precio": p.precio,
-            "stock": p.stock,
-            "id_categoria": p.id_categoria,
-            "categoria_nombre": categorias.get(p.id_categoria, "Sin categoría")
-        }
-        for p in productos
-    ]
-    return {"productos": productos_lista, "total": len(productos_lista)}
+# === CRUD DE CLIENTES ===
+@app.post("/clientes/", status_code=status.HTTP_201_CREATED)
+async def crear_cliente(nombre: str, telefono: str, email: str, session: AsyncSession = Depends(get_session)):
+    if await crud.buscar_cliente_por_email(session, email):
+        raise HTTPException(status_code=400, detail="Ya existe un cliente con ese email")
+    cliente = await crud.crear_cliente(session, nombre, telefono, email)
+    return {"message": "Cliente creado", "cliente": cliente}
+
+@app.get("/clientes/")
+async def obtener_clientes(session: AsyncSession = Depends(get_session)):
+    clientes = await crud.obtener_todos_clientes(session)
+    return {"clientes": clientes, "total": len(clientes)}
+
+
+# === UTILIDADES ===
+@app.get("/verificar/producto/{producto_id}")
+async def verificar_producto_existe(producto_id: str, session: AsyncSession = Depends(get_session)):
+    existe = await crud.producto_existe(session, producto_id)
+    return {"producto_id": producto_id, "existe": existe}
+
 
 if __name__ == "__main__":
     import uvicorn

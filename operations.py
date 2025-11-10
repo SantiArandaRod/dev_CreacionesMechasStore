@@ -1,7 +1,7 @@
-from typing import List, Optional
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.future import select
-from modelSQL import *
+from typing import List, Optional
+from modelSQL import Categoria, Producto, Cliente, Proveedor, ProveedorBackup
 
 # ===== CATEGORÍAS =====
 
@@ -12,13 +12,16 @@ async def crear_categoria(session: AsyncSession, tipo: str, codigo: str) -> Cate
     await session.refresh(categoria)
     return categoria
 
+
 async def obtener_categoria_por_id(session: AsyncSession, categoria_id: int) -> Optional[Categoria]:
     return await session.get(Categoria, categoria_id)
+
 
 async def obtener_todas_categorias(session: AsyncSession, skip: int = 0, limit: int = 100) -> List[Categoria]:
     statement = select(Categoria).offset(skip).limit(limit)
     result = await session.execute(statement)
     return result.scalars().all()
+
 
 async def actualizar_categoria(session: AsyncSession, categoria_id: int, tipo: str = None, codigo: str = None) -> Optional[Categoria]:
     categoria = await session.get(Categoria, categoria_id)
@@ -30,6 +33,7 @@ async def actualizar_categoria(session: AsyncSession, categoria_id: int, tipo: s
         await session.commit()
         await session.refresh(categoria)
     return categoria
+
 
 async def eliminar_categoria(session: AsyncSession, categoria_id: int) -> bool:
     categoria = await session.get(Categoria, categoria_id)
@@ -49,27 +53,24 @@ async def crear_producto(session: AsyncSession, id_producto: str, nombre: str, p
     await session.refresh(producto)
     return producto
 
+
 async def obtener_producto_por_id(session: AsyncSession, producto_id: str) -> Optional[Producto]:
     return await session.get(Producto, producto_id)
+
 
 async def obtener_todos_productos(session: AsyncSession, skip: int = 0, limit: int = 100) -> List[Producto]:
     statement = select(Producto).offset(skip).limit(limit)
     result = await session.execute(statement)
     return result.scalars().all()
 
+
 async def obtener_productos_por_categoria(session: AsyncSession, categoria_id: int) -> List[Producto]:
     statement = select(Producto).where(Producto.id_categoria == categoria_id)
     result = await session.execute(statement)
     return result.scalars().all()
 
-async def actualizar_producto(
-    session: AsyncSession,
-    producto_id: str,
-    nombre: str = None,
-    precio: float = None,
-    stock: int = None,
-    id_categoria: int = None
-) -> Optional[Producto]:
+
+async def actualizar_producto(session: AsyncSession, producto_id: str, nombre: str = None, precio: float = None, stock: int = None, id_categoria: int = None) -> Optional[Producto]:
     producto = await session.get(Producto, producto_id)
     if producto:
         if nombre is not None:
@@ -84,6 +85,7 @@ async def actualizar_producto(
         await session.refresh(producto)
     return producto
 
+
 async def actualizar_stock_producto(session: AsyncSession, producto_id: str, nueva_cantidad: int) -> Optional[Producto]:
     producto = await session.get(Producto, producto_id)
     if producto:
@@ -91,6 +93,7 @@ async def actualizar_stock_producto(session: AsyncSession, producto_id: str, nue
         await session.commit()
         await session.refresh(producto)
     return producto
+
 
 async def sumar_stock_producto(session: AsyncSession, producto_id: str, cantidad: int) -> Optional[Producto]:
     producto = await session.get(Producto, producto_id)
@@ -100,17 +103,16 @@ async def sumar_stock_producto(session: AsyncSession, producto_id: str, cantidad
         await session.refresh(producto)
     return producto
 
+
 async def restar_stock_producto(session: AsyncSession, producto_id: str, cantidad: int) -> Optional[Producto]:
     producto = await session.get(Producto, producto_id)
-    if producto:
-        if producto.stock >= cantidad:
-            producto.stock -= cantidad
-            await session.commit()
-            await session.refresh(producto)
-            return producto
-        else:
-            return None  # No hay suficiente stock
+    if producto and producto.stock >= cantidad:
+        producto.stock -= cantidad
+        await session.commit()
+        await session.refresh(producto)
+        return producto
     return None
+
 
 async def eliminar_producto(session: AsyncSession, producto_id: str) -> bool:
     producto = await session.get(Producto, producto_id)
@@ -130,18 +132,22 @@ async def crear_cliente(session: AsyncSession, nombre: str, telefono: str, email
     await session.refresh(cliente)
     return cliente
 
+
 async def obtener_cliente_por_id(session: AsyncSession, cliente_id: int) -> Optional[Cliente]:
     return await session.get(Cliente, cliente_id)
+
 
 async def obtener_todos_clientes(session: AsyncSession, skip: int = 0, limit: int = 100) -> List[Cliente]:
     statement = select(Cliente).offset(skip).limit(limit)
     result = await session.execute(statement)
     return result.scalars().all()
 
+
 async def buscar_cliente_por_email(session: AsyncSession, email: str) -> Optional[Cliente]:
     statement = select(Cliente).where(Cliente.email == email)
     result = await session.execute(statement)
     return result.scalars().first()
+
 
 async def actualizar_cliente(session: AsyncSession, cliente_id: int, nombre: str = None, telefono: str = None, email: str = None) -> Optional[Cliente]:
     cliente = await session.get(Cliente, cliente_id)
@@ -155,6 +161,7 @@ async def actualizar_cliente(session: AsyncSession, cliente_id: int, nombre: str
         await session.commit()
         await session.refresh(cliente)
     return cliente
+
 
 async def eliminar_cliente(session: AsyncSession, cliente_id: int) -> bool:
     cliente = await session.get(Cliente, cliente_id)
@@ -174,17 +181,21 @@ async def crear_proveedor(session: AsyncSession, nit: str, nombre: str, direccio
     await session.refresh(proveedor)
     return proveedor
 
+
 async def obtener_proveedor_por_nit(session: AsyncSession, nit: str) -> Optional[Proveedor]:
     return await session.get(Proveedor, nit)
+
 
 async def obtener_todos_proveedores(session: AsyncSession, skip: int = 0, limit: int = 100) -> List[Proveedor]:
     statement = select(Proveedor).offset(skip).limit(limit)
     result = await session.execute(statement)
     return result.scalars().all()
 
+
 async def obtener_proveedores_resumen(session: AsyncSession) -> List[Proveedor]:
     result = await session.execute(select(Proveedor))
     return result.scalars().all()
+
 
 async def mover_proveedor(session: AsyncSession, nit: str) -> bool:
     proveedor = await session.get(Proveedor, nit)
@@ -202,9 +213,11 @@ async def mover_proveedor(session: AsyncSession, nit: str) -> bool:
     await session.commit()
     return True
 
+
 async def obtener_proveedores_eliminados(session: AsyncSession) -> List[ProveedorBackup]:
     result = await session.execute(select(ProveedorBackup))
     return result.scalars().all()
+
 
 async def recuperar_proveedor(session: AsyncSession, nit: str) -> bool:
     proveedor_backup = await session.get(ProveedorBackup, nit)
@@ -221,6 +234,7 @@ async def recuperar_proveedor(session: AsyncSession, nit: str) -> bool:
     await session.delete(proveedor_backup)
     await session.commit()
     return True
+
 
 async def actualizar_proveedor(session: AsyncSession, nit: str, nombre: str = None, direccion: str = None, ciudad: str = None, contacto: str = None) -> Optional[Proveedor]:
     proveedor = await session.get(Proveedor, nit)
@@ -243,14 +257,18 @@ async def actualizar_proveedor(session: AsyncSession, nit: str, nombre: str = No
 async def categoria_existe(session: AsyncSession, categoria_id: int) -> bool:
     return await session.get(Categoria, categoria_id) is not None
 
+
 async def producto_existe(session: AsyncSession, producto_id: str) -> bool:
     return await session.get(Producto, producto_id) is not None
+
 
 async def cliente_existe(session: AsyncSession, cliente_id: int) -> bool:
     return await session.get(Cliente, cliente_id) is not None
 
+
 async def proveedor_existe(session: AsyncSession, nit: str) -> bool:
     return await session.get(Proveedor, nit) is not None
+
 
 async def verificar_stock_disponible(session: AsyncSession, producto_id: str, cantidad_requerida: int) -> bool:
     producto = await session.get(Producto, producto_id)
