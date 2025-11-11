@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+<main>
+
+  <h1 class="titulo">Lista de Proveedores</h1>
+
+  {% if mensaje %}
+    <div class="alerta-exito">{{ mensaje }}</div>
+  {% endif %}
+
+  <!-- === TABLA DE PROVEEDORES === -->
+  <table class="tabla-proveedores">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Contacto</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for proveedor in proveedores %}
+      <tr>
+        <td>{{ proveedor.nombre }}</td>
+        <td>{{ proveedor.contacto }}</td>
+        <td>
+          <form action="/proveedores/eliminar/{{ proveedor.nit }}" method="post" style="display:inline;">
+            <button type="submit" class="btn-eliminar">Eliminar</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- === BOTONES PRINCIPALES === -->
+  <div class="button-container">
+    <button class="volver-button" onclick="window.location.href='/'">Atrás</button>
+    <button class="agregar-button" id="abrirModal">Agregar</button>
+  </div>
+
+</main>
+
+<!-- === MODAL FUERA DEL MAIN === -->
+<div id="modalOverlay" class="overlay">
+  <div class="modal-contenido">
+    <h2>Agregar Proveedor</h2>
+    <form id="formProveedor" class="form-modal" method="post" action="/proveedores/agregar">
+      <label for="nit">NIT:</label>
+      <input type="text" id="nit" name="nit" required>
+
+      <label for="nombre">Nombre:</label>
+      <input type="text" id="nombre" name="nombre" required>
+
+      <label for="contacto">Contacto:</label>
+      <input type="text" id="contacto" name="contacto" required>
+
+      <label for="direccion">Dirección:</label>
+      <input type="text" id="direccion" name="direccion" required>
+
+      <label for="ciudad">Ciudad:</label>
+      <input type="text" id="ciudad" name="ciudad" required>
+
+      <div class="modal-botones">
+        <button type="submit" class="btn-guardar">Guardar</button>
+        <button type="button" id="cerrarModal" class="btn-cancelar">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="{{ url_for('static', path='js/modal.js') }}"></script>
+
+{% endblock %}

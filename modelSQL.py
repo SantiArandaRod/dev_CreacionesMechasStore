@@ -1,4 +1,3 @@
-
 from datetime import datetime
 from sqlmodel import Field, SQLModel, create_engine, Session, select
 
@@ -25,15 +24,16 @@ class Cliente(SQLModel, table=True):
 
 
 class Venta(SQLModel, table=True):
-    id_venta: int = Field(default=None, primary_key=True)
+    id_venta_pk: str = Field(primary_key=True)
     fecha: datetime
-    id_cliente: int = Field(foreign_key="cliente.id_cliente")
+    documento_fk: int = Field(foreign_key="cliente.documento_pk")
+    total: float
 
 
-class DetalleVenta(SQLModel, table=True):
-    id_detalle_venta: int = Field(default=None, primary_key=True)
-    id_venta: int = Field(foreign_key="venta.id_venta")
-    id_producto: str = Field(foreign_key="producto.id_producto")
+class Detalle_Venta(SQLModel, table=True):
+    id_detalleventa_pk: int = Field(primary_key=True)
+    id_venta_fk: str = Field(foreign_key="venta.id_venta_pk")
+    isbn_fk: str
     cantidad: int
     precio_unidad: float
 
@@ -45,6 +45,12 @@ class Proveedor(SQLModel, table=True):
     direccion: str
     ciudad: str
 
+class ProveedorBackup(SQLModel, table=True):
+    nit: str = Field(default=None, primary_key=True)
+    nombre: str
+    contacto: str
+    direccion: str
+    ciudad: str
 
 class Compra(SQLModel, table=True):
     id_compra: int = Field(default=None, primary_key=True)
@@ -52,10 +58,9 @@ class Compra(SQLModel, table=True):
     nit: str = Field(foreign_key="proveedor.nit")
 
 
-class DetalleCompra(SQLModel, table=True):
+class Detalle_Compra(SQLModel, table=True):
     id_detalle_compra: int = Field(default=None, primary_key=True)
     id_compra: int = Field(foreign_key="compra.id_compra")
     id_producto: str = Field(foreign_key="producto.id_producto")
     cantidad: int
     precio_unidad: float
-
