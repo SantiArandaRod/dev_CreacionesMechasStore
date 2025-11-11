@@ -1,27 +1,41 @@
 {% extends "base.html" %}
 {% block content %}
-<main>
+
+{% include "navbar.html" %}
+
+<main style="padding-top:20px;">
   <h1 class="titulo">Lista de Productos</h1>
 
-  <div class="filtro-contenedor" style="width:80%; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-    <div>
-      <label for="filterCategoria" style="font-family: 'Poppins', sans-serif; color:#7a4e9b; margin-right:8px;">
-        Filtrar por categoría:
-      </label>
-      <select id="filterCategoria" name="filterCategoria" style="padding:8px 10px; border-radius:8px; border:1px solid #ccc;">
-        <option value="0">Todas</option>
+  <!-- FILTROS + ACCIONES -->
+  <div class="filtro-contenedor" style="width:80%; margin:12px auto; display:flex; justify-content:space-between; align-items:center; gap:10px;">
+
+    <!-- Filtro por categoría + buscador -->
+    <div style="display:flex; align-items:center; gap:10px;">
+      <select id="filterCategoria" name="filterCategoria"
+        style="padding:8px 10px; border-radius:8px; border:1px solid #ccc;">
+        <option value="0">Todas las categorías</option>
         {% for cat in categorias %}
           <option value="{{ cat.id_categoria }}">{{ cat.tipo }}</option>
         {% endfor %}
       </select>
+
+      <input
+        type="text"
+        id="buscador"
+        placeholder="Buscar por nombre"
+        style="padding:8px; width:220px; border-radius:8px; border:1px solid #ccc;"
+      >
     </div>
 
-    <div>
+    <!-- Botones -->
+    <div style="display:flex; gap:10px;">
       <button class="volver-button" onclick="window.location.href='/'">Atrás</button>
       <button class="agregar-button" id="abrirModalProducto">Agregar</button>
     </div>
+
   </div>
 
+  <!-- TABLA -->
   <table class="tabla-proveedores" id="tablaProductos">
     <thead>
       <tr>
@@ -41,15 +55,16 @@
         <td>{{ "%.2f"|format(p.precio) }}</td>
         <td>{{ p.stock }}</td>
         <td>{{ p.categoria_nombre }}</td>
-        <td>
-          <button class="btn-eliminar btn-eliminar-producto" data-id="{{ p.id_producto }}">Eliminar</button>
-        </td>
+        <td><button class="btn-eliminar btn-eliminar-producto" data-id="{{ p.id_producto }}">Eliminar</button></td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 
-  <!-- Modal para agregar producto -->
+  <!-- PAGINACION -->
+  <div id="paginacion" style="margin-top:20px; display:flex; gap:10px; justify-content:center;"></div>
+
+  <!-- MODAL AGREGAR PRODUCTO -->
   <div id="modalOverlayProducto" class="overlay">
     <div class="modal-contenido">
       <h2>Agregar Producto</h2>
@@ -83,6 +98,7 @@
     </div>
   </div>
 </main>
+
 {% endblock %}
 
 {% block scripts %}

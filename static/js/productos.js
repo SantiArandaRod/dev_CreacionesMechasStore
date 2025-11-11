@@ -1,176 +1,201 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Elementos
+
+  // ===== VARIABLES GLOBALES =====
+  let currentPage = 1;
+  const PAGE_SIZE = 10;
+
+  // ===== ELEMENTOS =====
   const abrirModalBtn = document.getElementById("abrirModalProducto");
   const cerrarModalBtn = document.getElementById("cerrarModalProducto");
   const modal = document.getElementById("modalOverlayProducto");
   const form = document.getElementById("formProducto");
   const filterSelect = document.getElementById("filterCategoria");
   const productosBody = document.getElementById("productosBody");
+  const buscador = document.getElementById("buscador");
 
-  // Abrir modal
-  if (abrirModalBtn && modal) {
+  // ============================
+  //          MODAL
+  // ============================
+  if (abrirModalBtn) {
     abrirModalBtn.addEventListener("click", () => {
       modal.style.display = "flex";
     });
   }
 
-  // Cerrar modal
-  if (cerrarModalBtn && modal) {
+  if (cerrarModalBtn) {
     cerrarModalBtn.addEventListener("click", () => {
       modal.style.display = "none";
       form.reset();
     });
   }
 
-  // Enviar formulario para crear producto
+  window.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.style.display = "none";
+      form.reset();
+    }
+  });
+
+  // ============================
+  //     CREAR PRODUCTO
+  // ============================
   if (form) {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+
       const formData = new FormData(form);
       const body = new URLSearchParams(formData);
 
       try {
         const res = await fetch("/productos/", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-          },
-          body: body
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body
         });
 
         if (res.ok) {
-          alert("✅ Producto agregado exitosamente");
+          alert("Producto agregado exitosamente");
           modal.style.display = "none";
           form.reset();
-          // recargar lista: aplicar filtro actual (o todas)
-          triggerFilter();
+          obtenerPagina(1);
         } else {
-          const data = await res.json();
-          alert("⚠️ Error: " + (data.detail || JSON.stringify(data)));
-          console.error("Error creación producto:", data);
+          const err = await res.json();
+          alert("Error: " + err.detail);
         }
-      } catch (err) {
-        console.error("Error conexión:", err);
-        alert("❌ Error de conexión con el servidor");
+      } catch (error) {
+        alert("Error de conexión");
       }
     });
   }
 
-  // Filtrar por categoría
+  // ============================
+  //    FILTRO POR CATEGORÍA
+  // ============================
   if (filterSelect) {
     filterSelect.addEventListener("change", () => {
-      triggerFilter();
+      obtenerPagina(1);
     });
   }
 
-  async function triggerFilter() {
-    const categoriaId = filterSelect ? filterSelect.value : "0";
+  // ============================
+  //       BUSCADOR
+  // ============================
+  if (buscador) {
+    buscador.addEventListener("input", () => {
+      obtenerPagina(1);
+    });
+  }
+
+  // ============================
+  //     PAGINACIÓN BACKEND
+  // ============================
+  async function obtenerPagina(page) {
+    currentPage = page;
+
+    const categoriaId = filterSelect ? filterSelect.value : 0;
+    const search = buscador ? buscador.value.trim() : "";
+
     try {
-      const res = await fetch(`/productos/categoria/${categoriaId}`);
-      if (!res.ok) {
-        const err = await res.json();
-        alert("Error al filtrar: " + (err.detail || JSON.stringify(err)));
-        return;
-      }
+      const res = await fetch(
+        `/productos/paginados/?page=${page}&page_size=${PAGE_SIZE}&categoria=${categoriaId}&search=${encodeURIComponent(search)}`
+      );
+
       const data = await res.json();
-      if (data && data.productos) {
-        renderProducts(data.productos);
-      } else {
-        renderProducts([]);
-      }
+
+      renderProducts(data.productos);
+      renderPaginacion(data.total_pages, data.current_page);
+
     } catch (err) {
-      console.error("Error al obtener productos:", err);
-      alert("❌ Error al obtener productos");
+      console.log("Error cargando productos:", err);
+      alert("Error cargando productos");
     }
   }
 
-  // Renderiza la tabla de productos (reemplaza tbody)
+  // ============================
+  //         RENDER TABLA
+  // ============================
   function renderProducts(productos) {
-    if (!productosBody) return;
-    productosBody.innerHTML = ""; // limpiar
+    productosBody.innerHTML = "";
 
     if (!productos || productos.length === 0) {
-      const tr = document.createElement("tr");
-      const td = document.createElement("td");
-      td.colSpan = 6;
-      td.style.textAlign = "center";
-      td.textContent = "No hay productos para mostrar.";
-      tr.appendChild(td);
-      productosBody.appendChild(tr);
+      productosBody.innerHTML = `
+        <tr><td colspan="6" style="text-align:center;">No hay productos</td></tr>
+      `;
       return;
     }
 
     productos.forEach(p => {
       const tr = document.createElement("tr");
-
-      const tdId = document.createElement("td");
-      tdId.textContent = p.id_producto;
-      tr.appendChild(tdId);
-
-      const tdNombre = document.createElement("td");
-      tdNombre.textContent = p.nombre;
-      tr.appendChild(tdNombre);
-
-      const tdPrecio = document.createElement("td");
-      tdPrecio.textContent = Number(p.precio).toFixed(2);
-      tr.appendChild(tdPrecio);
-
-      const tdStock = document.createElement("td");
-      tdStock.textContent = p.stock;
-      tr.appendChild(tdStock);
-
-      const tdCat = document.createElement("td");
-      tdCat.textContent = p.categoria_nombre || "";
-      tr.appendChild(tdCat);
-
-      const tdAcciones = document.createElement("td");
-      const btnEliminar = document.createElement("button");
-      btnEliminar.className = "btn-eliminar btn-eliminar-producto";
-      btnEliminar.setAttribute("data-id", p.id_producto);
-      btnEliminar.textContent = "Eliminar";
-      tdAcciones.appendChild(btnEliminar);
-      tr.appendChild(tdAcciones);
-
+      tr.innerHTML = `
+        <td>${p.id_producto}</td>
+        <td>${p.nombre}</td>
+        <td>${Number(p.precio).toFixed(2)}</td>
+        <td>${p.stock}</td>
+        <td>${p.categoria_nombre}</td>
+        <td>
+          <button class="btn-eliminar btn-eliminar-producto" data-id="${p.id_producto}">
+            Eliminar
+          </button>
+        </td>
+      `;
       productosBody.appendChild(tr);
     });
 
-    // Asignar listeners a botones eliminar
     document.querySelectorAll(".btn-eliminar-producto").forEach(btn => {
-      btn.removeEventListener("click", onEliminarClick); // por seguridad
-      btn.addEventListener("click", onEliminarClick);
+      btn.addEventListener("click", eliminarProducto);
     });
   }
 
-  async function onEliminarClick(e) {
-    const id = e.currentTarget.getAttribute("data-id");
-    if (!id) return;
-    if (!confirm(`¿Eliminar producto ${id}? Esta acción no se puede deshacer.`)) return;
+  // ============================
+  //     ELIMINAR PRODUCTO
+  // ============================
+  async function eliminarProducto(e) {
+    const id = e.target.getAttribute("data-id");
+    if (!confirm(`Eliminar producto ${id}?`)) return;
 
     try {
       const res = await fetch(`/productos/${encodeURIComponent(id)}`, {
         method: "DELETE"
       });
+
       if (res.ok) {
-        alert("✅ Producto eliminado");
-        triggerFilter();
+        alert("Producto eliminado");
+        obtenerPagina(currentPage);
       } else {
-        const data = await res.json();
-        alert("⚠️ Error eliminando: " + (data.detail || JSON.stringify(data)));
+        alert("No se pudo eliminar");
       }
     } catch (err) {
-      console.error("Error al eliminar:", err);
-      alert("❌ Error de conexión al eliminar");
+      alert("Error de conexión");
     }
   }
 
-  // Cargar inicialmente (filtrado por 'Todas')
-  triggerFilter();
+  // ============================
+  //    RENDER PAGINACIÓN
+  // ============================
+  function renderPaginacion(totalPages, currentPage) {
+    const cont = document.getElementById("paginacion");
+    if (!cont) return;
 
-  // Cerrar modal si se hace clic fuera del contenido
-  window.addEventListener("click", (e) => {
-    if (e.target === modal) {
-      modal.style.display = "none";
-      if (form) form.reset();
+    cont.innerHTML = "";
+
+    for (let i = 1; i <= totalPages; i++) {
+      const btn = document.createElement("button");
+      btn.textContent = i;
+      btn.className = "volver-button";
+      btn.style.padding = "8px 14px";
+
+      if (i === currentPage) {
+        btn.style.background = "#6b2d84";
+        btn.style.color = "white";
+      }
+
+      btn.addEventListener("click", () => obtenerPagina(i));
+      cont.appendChild(btn);
     }
-  });
+  }
+
+  // ============================
+  //    CARGAR PRIMERA PAGINA
+  // ============================
+  obtenerPagina(1);
 });
