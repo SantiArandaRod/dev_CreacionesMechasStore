@@ -1,88 +1,90 @@
 {% extends "base.html" %}
 {% block content %}
 <main>
-<h1 class="titulo">Lista de Productos</h1>
+  <h1 class="titulo">Lista de Productos</h1>
 
-<div class="filtro-contenedor" style="width:80%; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-  <div>
-    <label for="filterCategoria" style="font-family: 'Poppins', sans-serif; color:#7a4e9b; margin-right:8px;">Filtrar por categoría:</label>
-    <select id="filterCategoria" name="filterCategoria" style="padding:8px 10px; border-radius:8px; border:1px solid #ccc;">
-      <option value="0">Todas</option>
-      {% for cat in categorias %}
-        <option value="{{ cat.id_categoria }}">{{ cat.tipo }}</option>
-      {% endfor %}
-    </select>
-  </div>
-
-  <div>
-    <button class="volver-button" onclick="window.location.href='/'">Atrás</button>
-    <button class="agregar-button" id="abrirModalProducto">Agregar</button>
-  </div>
-</div>
-
-<table class="tabla-proveedores" id="tablaProductos">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Nombre</th>
-      <th>Precio</th>
-      <th>Stock</th>
-      <th>Categoría</th>
-      <th>Acción</th>
-    </tr>
-  </thead>
-  <tbody id="productosBody">
-    {% for p in productos %}
-    <tr>
-      <td>{{ p.id_producto }}</td>
-      <td>{{ p.nombre }}</td>
-      <td>{{ "%.2f"|format(p.precio) }}</td>
-      <td>{{ p.stock }}</td>
-      <td>{{ p.categoria_nombre }}</td>
-      <td>
-        <button class="btn-eliminar btn-eliminar-producto" data-id="{{ p.id_producto }}">Eliminar</button>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
-<!-- Modal para agregar producto -->
-<div id="modalOverlayProducto" class="overlay">
-  <div class="modal-contenido">
-    <h2>Agregar Producto</h2>
-
-    <form id="formProducto" class="form-modal">
-      <label for="id_producto">ID Producto:</label>
-      <input type="text" id="id_producto" name="id_producto" required>
-
-      <label for="nombre">Nombre:</label>
-      <input type="text" id="nombre" name="nombre" required>
-
-      <label for="precio">Precio:</label>
-      <input type="number" id="precio" name="precio" step="0.01" min="0" required>
-
-      <label for="stock">Stock:</label>
-      <input type="number" id="stock" name="stock" min="0" step="1" required>
-
-      <label for="id_categoria">Categoría:</label>
-      <select id="id_categoria" name="id_categoria" required>
-        <option value="">Selecciona una categoría</option>
-        {% for c in categorias %}
-          <option value="{{ c.id_categoria }}">{{ c.tipo }}</option>
+  <div class="filtro-contenedor" style="width:80%; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+    <div>
+      <label for="filterCategoria" style="font-family: 'Poppins', sans-serif; color:#7a4e9b; margin-right:8px;">
+        Filtrar por categoría:
+      </label>
+      <select id="filterCategoria" name="filterCategoria" style="padding:8px 10px; border-radius:8px; border:1px solid #ccc;">
+        <option value="0">Todas</option>
+        {% for cat in categorias %}
+          <option value="{{ cat.id_categoria }}">{{ cat.tipo }}</option>
         {% endfor %}
       </select>
+    </div>
 
-      <div class="modal-botones">
-        <button type="submit" class="btn-guardar">Guardar</button>
-        <button type="button" id="cerrarModalProducto" class="btn-cancelar">Cancelar</button>
-      </div>
-    </form>
+    <div>
+      <button class="volver-button" onclick="window.location.href='/'">Atrás</button>
+      <button class="agregar-button" id="abrirModalProducto">Agregar</button>
+    </div>
   </div>
-</div>
 
-{% endblock %}
+  <table class="tabla-proveedores" id="tablaProductos">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Precio</th>
+        <th>Stock</th>
+        <th>Categoría</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody id="productosBody">
+      {% for p in productos %}
+      <tr>
+        <td>{{ p.id_producto }}</td>
+        <td>{{ p.nombre }}</td>
+        <td>{{ "%.2f"|format(p.precio) }}</td>
+        <td>{{ p.stock }}</td>
+        <td>{{ p.categoria_nombre }}</td>
+        <td>
+          <button class="btn-eliminar btn-eliminar-producto" data-id="{{ p.id_producto }}">Eliminar</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Modal para agregar producto -->
+  <div id="modalOverlayProducto" class="overlay">
+    <div class="modal-contenido">
+      <h2>Agregar Producto</h2>
+
+      <form id="formProducto" class="form-modal">
+        <label for="id_producto">ID Producto:</label>
+        <input type="text" id="id_producto" name="id_producto" required>
+
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" required>
+
+        <label for="precio">Precio:</label>
+        <input type="number" id="precio" name="precio" step="0.01" min="0" required>
+
+        <label for="stock">Stock:</label>
+        <input type="number" id="stock" name="stock" min="0" step="1" required>
+
+        <label for="id_categoria">Categoría:</label>
+        <select id="id_categoria" name="id_categoria" required>
+          <option value="">Selecciona una categoría</option>
+          {% for c in categorias %}
+            <option value="{{ c.id_categoria }}">{{ c.tipo }}</option>
+          {% endfor %}
+        </select>
+
+        <div class="modal-botones">
+          <button type="submit" class="btn-guardar">Guardar</button>
+          <button type="button" id="cerrarModalProducto" class="btn-cancelar">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </main>
+{% endblock %}
+
 {% block scripts %}
 <script src="{{ url_for('static', path='js/productos.js') }}"></script>
 {% endblock %}

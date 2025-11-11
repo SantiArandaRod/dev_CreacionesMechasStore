@@ -64,10 +64,13 @@ async def obtener_todos_productos(session: AsyncSession, skip: int = 0, limit: i
     return result.scalars().all()
 
 
-async def obtener_productos_por_categoria(session: AsyncSession, categoria_id: int) -> List[Producto]:
-    statement = select(Producto).where(Producto.id_categoria == categoria_id)
-    result = await session.execute(statement)
+async def obtener_productos_por_categoria(session: AsyncSession, categoria_id: int):
+    from modelSQL import Producto
+    result = await session.execute(
+        select(Producto).where(Producto.id_categoria == categoria_id)
+    )
     return result.scalars().all()
+
 
 
 async def actualizar_producto(session: AsyncSession, producto_id: str, nombre: str = None, precio: float = None, stock: int = None, id_categoria: int = None) -> Optional[Producto]:

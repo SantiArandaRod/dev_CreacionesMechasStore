@@ -53,6 +53,30 @@ async def pagina_productos(request: Request, session: AsyncSession = Depends(get
         "productos": productos_lista,
         "categorias": categorias
     })
+@app.get("/productos/categoria/{categoria_id}")
+async def obtener_productos_por_categoria(categoria_id: int, session: AsyncSession = Depends(get_session)):
+    """
+    Devuelve todos los productos de una categoría específica.
+    Si categoria_id == 0, devuelve todos los productos.
+    """
+    if categoria_id == 0:
+        productos = await crud.obtener_todos_productos(session)
+    else:
+        productos = await crud.obtener_productos_por_categoria(session, categoria_id)
+
+    categorias = {c.id_categoria: c.tipo for c in await crud.obtener_todas_categorias(session)}
+    productos_lista = [
+        {
+            "id_producto": p.id_producto,
+            "nombre": p.nombre,
+            "precio": p.precio,
+            "stock": p.stock,
+            "id_categoria": p.id_categoria,
+            "categoria_nombre": categorias.get(p.id_categoria, "Sin categoría")
+        }
+        for p in productos
+    ]
+    return {"productos": productos_lista, "total": len(productos_lista)}
 
 @app.get("/ventas/pagina")
 async def pagina_ventas(request: Request):

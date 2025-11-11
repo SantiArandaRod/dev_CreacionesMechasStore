@@ -52,15 +52,6 @@ class ProveedorBackup(SQLModel, table=True):
     direccion: str
     ciudad: str
 
-
-class ProveedorBackup(SQLModel, table=True):
-    nit: str = Field(default=None, primary_key=True)
-    nombre: str
-    contacto: str
-    direccion: str
-    ciudad: str
-
-
 class Compra(SQLModel, table=True):
     id_compra: int = Field(default=None, primary_key=True)
     fecha: datetime
