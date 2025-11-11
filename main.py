@@ -150,7 +150,47 @@ async def eliminar_producto(producto_id: str, session: AsyncSession = Depends(ge
     if await crud.eliminar_producto(session, producto_id):
         return {"message": "Producto eliminado"}
     raise HTTPException(status_code=404, detail="Producto no encontrado")
+# === CRUD DE PROVEEDORES ===
+@app.post("/proveedores/", status_code=status.HTTP_201_CREATED)
+async def crear_proveedor(
+    nit: str = Form(...),
+    nombre: str = Form(...),
+    direccion: str = Form(...),
+    ciudad: str = Form(...),
+    contacto: str = Form(...),
+    session: AsyncSession = Depends(get_session)
+):
+    """Crea un nuevo proveedor"""
+    try:
+        if await crud.proveedor_existe(session, nit):
+            raise HTTPException(status_code=400, detail="El proveedor ya existe")
 
+        proveedor = await crud.crear_proveedor(session, nit, nombre, direccion, ciudad, contacto)
+        return {"message": "Proveedor agregado exitosamente", "proveedor": proveedor}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error creando proveedor: {e}")
+
+
+@app.get("/proveedores/")
+async def obtener_proveedores(session: AsyncSession = Depends(get_session)):
+    """Devuelve todos los proveedores"""
+    proveedores = await crud.obtener_todos_proveedores(session)
+    return {"proveedores": proveedores, "total": len(proveedores)}
+
+
+@app.delete("/proveedores/{nit}")
+async def eliminar_proveedor(nit: str, session: AsyncSession = Depends(get_session)):
+    """Elimina un proveedor (mueve a backup)"""
+    if await crud.mover_proveedor(session, nit):
+        return {"message": "Proveedor movido al backup"}
+    raise HTTPException(status_code=404, detail="Proveedor no encontrado")
+
+
+@app.get("/proveedores/backup/")
+async def obtener_proveedores_backup(session: AsyncSession = Depends(get_session)):
+    """Devuelve los proveedores eliminados (backup)"""
+    proveedores_backup = await crud.obtener_proveedores_eliminados(session)
+    return {"backup": proveedores_backup}
 
 # === MANEJO DE STOCK ===
 @app.put("/productos/{producto_id}/stock")

@@ -12,16 +12,22 @@
   <table class="tabla-proveedores">
     <thead>
       <tr>
+        <th>NIT</th>
         <th>Nombre</th>
         <th>Contacto</th>
+        <th>Dirección</th>
+        <th>Ciudad</th>
         <th>Acción</th>
       </tr>
     </thead>
     <tbody>
       {% for proveedor in proveedores %}
       <tr>
+        <td>{{ proveedor.nit }}</td>
         <td>{{ proveedor.nombre }}</td>
         <td>{{ proveedor.contacto }}</td>
+        <td>{{ proveedor.direccion }}</td>
+        <td>{{ proveedor.ciudad }}</td>
         <td>
           <form action="/proveedores/eliminar/{{ proveedor.nit }}" method="post" style="display:inline;">
             <button type="submit" class="btn-eliminar">Eliminar</button>
@@ -44,7 +50,7 @@
 <div id="modalOverlay" class="overlay">
   <div class="modal-contenido">
     <h2>Agregar Proveedor</h2>
-    <form id="formProveedor" class="form-modal" method="post" action="/proveedores/agregar">
+    <form id="formProveedor" class="form-modal" method="post" action="/proveedores/">
       <label for="nit">NIT:</label>
       <input type="text" id="nit" name="nit" required>
 
