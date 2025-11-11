@@ -25,12 +25,19 @@ body::before {
 }
 
 /* ===== CONTENIDO PRINCIPAL ===== */
+/* ===== CONTENIDO PRINCIPAL ===== */
 main {
+  margin-top: 0;
+  padding-top: 20px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+.fila-inactiva {
+  background-color: #eee;
+  color: #777;
 }
 
 .titulo {
@@ -128,8 +135,8 @@ main h1 {
 /* ===== RELOJ ===== */
 #clock-container {
   position: fixed;
-  top: 50px;
-  right: 450px;
+  top: 60px;
+  right: 20px;
   background-color: rgba(122, 78, 155, 0.8);
   color: #fff;
   padding: 10px 20px;
@@ -137,7 +144,7 @@ main h1 {
   font-family: 'Poppins', sans-serif;
   text-align: right;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
+  z-index: 999;
 }
 
 #clock-time {
@@ -412,3 +419,44 @@ main h1 {
   from { transform: scale(0.8); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
+/* ===== NAVBAR FIJA ===== */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #7a4e9b;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.nav-left {
+  font-size: 20px;
+  font-weight: 600;
+  font-family: 'Lilita One', cursive;
+}
+
+.nav-right {
+  display: flex;
+  gap: 15px;
+}
+
+.nav-right a {
+  color: white;
+  text-decoration: none;
+  font-family: 'Lilita One', cursive;
+  transition: color 0.3s ease;
+}
+
+.nav-right a:hover {
+  color: #ffabce;
+}
+
+body {
+  padding-top: 50px;
+  }

@@ -1,11 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
-<main>
 
-  <h1 class="titulo">Proveedores Eliminados</h1>
+{% include "navbar.html" %}
+
+<main style="margin-top: 70px;">
+  <div style="display:flex; align-items:center; gap:12px;">
     <button class="volver-top" onclick="window.location.href='/proveedores/pagina'">⟵ Volver</button>
+    <h1 class="titulo" style="margin:0;">Proveedores Eliminados</h1>
+  </div>
 
-  <table class="tabla-proveedores">
+  <table class="tabla-proveedores" style="margin-top:20px;">
     <thead>
       <tr>
         <th>Nombre</th>
@@ -14,6 +18,13 @@
       </tr>
     </thead>
     <tbody>
+      {% if proveedores|length == 0 %}
+      <tr>
+        <td colspan="3" style="text-align:center; padding:12px;">
+          No hay proveedores eliminados.
+        </td>
+      </tr>
+      {% else %}
       {% for proveedor in proveedores %}
       <tr>
         <td>{{ proveedor.nombre }}</td>
@@ -25,6 +36,7 @@
         </td>
       </tr>
       {% endfor %}
+      {% endif %}
     </tbody>
   </table>
 
@@ -33,4 +45,5 @@
   </div>
 
 </main>
+
 {% endblock %}
