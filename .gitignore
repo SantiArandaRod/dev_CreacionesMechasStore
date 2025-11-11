@@ -2,6 +2,7 @@
 .idea/swagger-settings.xml
 .idea/dev_CreacionesMechasStore.iml
 .idea/misc.xml
+.idea/*
 __pycache__/
 /data
 /others/*
