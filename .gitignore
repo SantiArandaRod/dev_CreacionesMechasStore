@@ -1,1 +1,6 @@
 .env
+.idea/*
+__pycache__/main.cpython-313.pyc
+data/
+others/creaciones_mechas_db.sql
+others/local_test.db
