@@ -1,5 +1,7 @@
 .env
 .idea/swagger-settings.xml
+.idea/dev_CreacionesMechasStore.iml
+.idea/misc.xml
 __pycache__/
 /data
 /others/*
