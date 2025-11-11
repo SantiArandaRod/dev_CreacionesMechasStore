@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% include "navbar.html" %}
+
+<main style="padding-top: 20px;">
+
+  <h1 class="titulo">Lista de Clientes</h1>
+
+  <!-- BOTONES ARRIBA -->
+  <div style="width:80%; margin:12px auto; display:flex; justify-content:flex-end; gap:10px;">
+    <button class="volver-button" onclick="window.location.href='/'">Atrás</button>
+    <button class="agregar-button" id="abrirModalCliente">Agregar</button>
+  </div>
+
+  <!-- TABLA DE CLIENTES -->
+  <table class="tabla-proveedores">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Teléfono</th>
+        <th>Email</th>
+        <th>Estado</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+
+    <tbody id="clientesBody">
+      {% for c in clientes %}
+      <tr>
+        <td>{{ c.nombre }}</td>
+        <td>{{ c.telefono }}</td>
+        <td>{{ c.email }}</td>
+        <td>
+          {% if c.activo %}
+            <span style="color:green; font-weight:bold;">Activo</span>
+          {% else %}
+            <span style="color:red; font-weight:bold;">Inactivo</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if c.activo %}
+          <form action="/clientes/{{ c.id }}/inactivar" method="post" style="display:inline;">
+            <button type="submit" class="btn-eliminar">Inactivar</button>
+          </form>
+          {% else %}
+          <form action="/clientes/{{ c.id }}/activar" method="post" style="display:inline;">
+            <button type="submit" class="btn-guardar">Activar</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+
+  </table>
+
+</main>
+
+<!-- MODAL AGREGAR CLIENTE -->
+<div id="modalOverlayCliente" class="overlay">
+  <div class="modal-contenido">
+    <h2>Agregar Cliente</h2>
+
+    <form id="formCliente" class="form-modal">
+
+      <label for="nombre">Nombre:</label>
+      <input type="text" id="nombre" name="nombre" required>
+
+      <label for="telefono">Teléfono:</label>
+      <input type="text" id="telefono" name="telefono" required>
+
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required>
+
+      <div class="modal-botones">
+        <button type="submit" class="btn-guardar">Guardar</button>
+        <button type="button" id="cerrarModalCliente" class="btn-cancelar">Cancelar</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='js/clientes.js') }}"></script>
+{% endblock %}
