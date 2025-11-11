@@ -1,315 +1,189 @@
-
-from fastapi import FastAPI, Depends, HTTPException, status
-from sqlmodel import Session
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Depends, HTTPException, status, Request, Form
+from sqlalchemy.ext.asyncio import AsyncSession
 from DBengine import get_session, init_db
 import operations as crud
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse
 
-app = FastAPI(title="Sistema de Inventario creaciones mechas - Backend Modular")
+# === EVENTO DE VIDA (LIFESPAN) ===
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Inicializa la base de datos al iniciar la app."""
+    await init_db()
+    yield
 
+app = FastAPI(lifespan=lifespan, title="Sistema de Inventario - Creaciones Mechas")
 
-# Inicializar DB al arrancar
-@app.on_event("startup")
-def startup_event():
-    init_db()
+# === CONFIGURACIÓN DE FRONTEND ===
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
-
-# Endpoint básico de prueba
+# === PÁGINA PRINCIPAL ===
 @app.get("/")
-def root():
-    return {"message": "Backend corriendo correctamente"}
+async def home(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
-# ===== ENDPOINTS CATEGORÍAS =====
+# === PÁGINAS HTML ===
+@app.get("/proveedores/pagina")
+async def pagina_proveedores(request: Request, session: AsyncSession = Depends(get_session)):
+    proveedores = await crud.obtener_proveedores_resumen(session)
+    return templates.TemplateResponse("proveedores.html", {"request": request, "proveedores": proveedores})
+
+@app.get("/productos/pagina")
+async def pagina_productos(request: Request, session: AsyncSession = Depends(get_session)):
+    productos = await crud.obtener_todos_productos(session)
+    categorias = await crud.obtener_todas_categorias(session)
+    categorias_dict = {c.id_categoria: c.tipo for c in categorias}
+    productos_lista = [
+        {
+            "id_producto": p.id_producto,
+            "nombre": p.nombre,
+            "precio": p.precio,
+            "stock": p.stock,
+            "id_categoria": p.id_categoria,
+            "categoria_nombre": categorias_dict.get(p.id_categoria, "Sin categoría")
+        }
+        for p in productos
+    ]
+    return templates.TemplateResponse("productos.html", {
+        "request": request,
+        "productos": productos_lista,
+        "categorias": categorias
+    })
+@app.get("/productos/categoria/{categoria_id}")
+async def obtener_productos_por_categoria(categoria_id: int, session: AsyncSession = Depends(get_session)):
+    """
+    Devuelve todos los productos de una categoría específica.
+    Si categoria_id == 0, devuelve todos los productos.
+    """
+    if categoria_id == 0:
+        productos = await crud.obtener_todos_productos(session)
+    else:
+        productos = await crud.obtener_productos_por_categoria(session, categoria_id)
+
+    categorias = {c.id_categoria: c.tipo for c in await crud.obtener_todas_categorias(session)}
+    productos_lista = [
+        {
+            "id_producto": p.id_producto,
+            "nombre": p.nombre,
+            "precio": p.precio,
+            "stock": p.stock,
+            "id_categoria": p.id_categoria,
+            "categoria_nombre": categorias.get(p.id_categoria, "Sin categoría")
+        }
+        for p in productos
+    ]
+    return {"productos": productos_lista, "total": len(productos_lista)}
+
+@app.get("/ventas/pagina")
+async def pagina_ventas(request: Request):
+    return templates.TemplateResponse("ventas.html", {"request": request})
+
+@app.get("/compras/pagina")
+async def pagina_compras(request: Request):
+    return templates.TemplateResponse("compras.html", {"request": request})
+
+
+# === CRUD DE CATEGORÍAS ===
 @app.post("/categorias/", status_code=status.HTTP_201_CREATED)
-def crear_categoria(categoria: dict, session: Session = Depends(get_session)):
-    """Crear una nueva categoría - usando JSON en el body"""
-    tipo = categoria.get("tipo")
-    codigo = categoria.get("codigo")
-
+async def crear_categoria(tipo: str = Form(...), codigo: str = Form(...), session: AsyncSession = Depends(get_session)):
     if not tipo or not codigo:
-        raise HTTPException(status_code=400, detail="Se requieren los campos 'tipo' y 'codigo'")
-
+        raise HTTPException(status_code=400, detail="Faltan campos requeridos")
     try:
-        nueva_categoria = crud.crear_categoria(session, tipo, codigo)
+        nueva_categoria = await crud.crear_categoria(session, tipo, codigo)
         return {"message": "Categoría creada exitosamente", "categoria": nueva_categoria}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error creando categoría: {str(e)}")
-
+        raise HTTPException(status_code=400, detail=f"Error creando categoría: {e}")
 
 @app.get("/categorias/")
-def obtener_categorias(skip: int = 0, limit: int = 100, session: Session = Depends(get_session)):
-    """Obtener todas las categorías"""
-    categorias = crud.obtener_todas_categorias(session, skip, limit)
+async def obtener_categorias(session: AsyncSession = Depends(get_session)):
+    categorias = await crud.obtener_todas_categorias(session)
     return {"categorias": categorias}
 
-
-@app.get("/categorias/{categoria_id}")
-def obtener_categoria(categoria_id: int, session: Session = Depends(get_session)):
-    """Obtener una categoría específica"""
-    categoria = crud.obtener_categoria_por_id(session, categoria_id)
-    if not categoria:
-        raise HTTPException(status_code=404, detail="Categoría no encontrada")
-    return categoria
-
-
-@app.put("/categorias/{categoria_id}")
-def actualizar_categoria(categoria_id: int, nombre: str = None, codigo: str = None,
-                         session: Session = Depends(get_session)):
-    """Actualizar una categoría"""
-    categoria = crud.actualizar_categoria(session, categoria_id, nombre, codigo)
-    if not categoria:
-        raise HTTPException(status_code=404, detail="Categoría no encontrada")
-    return {"message": "Categoría actualizada exitosamente", "categoria": categoria}
-
-
 @app.delete("/categorias/{categoria_id}")
-def eliminar_categoria(categoria_id: int, session: Session = Depends(get_session)):
-    """Eliminar una categoría"""
-    if crud.eliminar_categoria(session, categoria_id):
-        return {"message": "Categoría eliminada exitosamente"}
-    else:
-        raise HTTPException(status_code=404, detail="Categoría no encontrada")
+async def eliminar_categoria(categoria_id: int, session: AsyncSession = Depends(get_session)):
+    if await crud.eliminar_categoria(session, categoria_id):
+        return {"message": "Categoría eliminada"}
+    raise HTTPException(status_code=404, detail="Categoría no encontrada")
 
 
-# ===== ENDPOINTS PRODUCTOS =====
+# === CRUD DE PRODUCTOS ===
 @app.post("/productos/", status_code=status.HTTP_201_CREATED)
-def crear_producto(id_producto: str, nombre: str, precio: float, stock: int, id_categoria: int,
-                   session: Session = Depends(get_session)):
-    """Crear un nuevo producto"""
-    # Verificar que la categoría existe
-    if not crud.categoria_existe(session, id_categoria):
-        raise HTTPException(status_code=400, detail="La categoría especificada no existe")
-
+async def crear_producto(
+    id_producto: str = Form(...),
+    nombre: str = Form(...),
+    precio: float = Form(...),
+    stock: int = Form(...),
+    id_categoria: int = Form(...),
+    session: AsyncSession = Depends(get_session)
+):
+    if not await crud.categoria_existe(session, id_categoria):
+        raise HTTPException(status_code=400, detail="Categoría no válida")
     try:
-        producto = crud.crear_producto(session, id_producto, nombre, precio, stock, id_categoria)
-        return {"message": "Producto creado exitosamente", "producto": producto}
+        producto = await crud.crear_producto(session, id_producto, nombre, precio, stock, id_categoria)
+        return {"message": "Producto creado correctamente", "producto": producto}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error creando producto: {str(e)}")
-
+        raise HTTPException(status_code=400, detail=f"Error: {e}")
 
 @app.get("/productos/")
-def obtener_productos(skip: int = 0, limit: int = 100, session: Session = Depends(get_session)):
-    """Obtener todos los productos"""
-    productos = crud.obtener_todos_productos(session, skip, limit)
-    return {"productos": productos, "total": len(productos)}
-
-
-@app.get("/productos/{producto_id}")
-def obtener_producto(producto_id: str, session: Session = Depends(get_session)):
-    """Obtener un producto específico"""
-    producto = crud.obtener_producto_por_id(session, producto_id)
-    if not producto:
-        raise HTTPException(status_code=404, detail="Producto no encontrado")
-    return producto
-
-
-@app.get("/productos/categoria/{categoria_id}")
-def obtener_productos_por_categoria(categoria_id: int, session: Session = Depends(get_session)):
-    """Obtener productos de una categoría específica"""
-    if not crud.categoria_existe(session, categoria_id):
-        raise HTTPException(status_code=404, detail="Categoría no encontrada")
-
-    productos = crud.obtener_productos_por_categoria(session, categoria_id)
-    return {"productos": productos, "categoria_id": categoria_id, "total": len(productos)}
-
-
-@app.put("/productos/{producto_id}")
-def actualizar_producto(
-        producto_id: str,
-        nombre: str = None,
-        precio: float = None,
-        stock: int = None,
-        id_categoria: int = None,
-        session: Session = Depends(get_session)
-):
-    """Actualizar un producto"""
-    # Si se especifica nueva categoría, verificar que existe
-    if id_categoria and not crud.categoria_existe(session, id_categoria):
-        raise HTTPException(status_code=400, detail="La categoría especificada no existe")
-
-    producto = crud.actualizar_producto(session, producto_id, nombre, precio, stock, id_categoria)
-    if not producto:
-        raise HTTPException(status_code=404, detail="Producto no encontrado")
-    return {"message": "Producto actualizado exitosamente", "producto": producto}
-
-
-@app.put("/productos/{producto_id}/stock")
-def actualizar_stock_producto(producto_id: str, nueva_cantidad: int, session: Session = Depends(get_session)):
-    """Actualizar el stock de un producto"""
-    if nueva_cantidad < 0:
-        raise HTTPException(status_code=400, detail="La cantidad no puede ser negativa")
-
-    producto = crud.actualizar_stock_producto(session, producto_id, nueva_cantidad)
-    if not producto:
-        raise HTTPException(status_code=404, detail="Producto no encontrado")
-    return {"message": f"Stock actualizado a {nueva_cantidad}", "producto": producto}
-
-
-@app.post("/productos/{producto_id}/agregar-stock")
-def agregar_stock(producto_id: str, cantidad: int, session: Session = Depends(get_session)):
-    """Agregar stock a un producto (para compras)"""
-    if cantidad <= 0:
-        raise HTTPException(status_code=400, detail="La cantidad debe ser positiva")
-
-    producto = crud.sumar_stock_producto(session, producto_id, cantidad)
-    if not producto:
-        raise HTTPException(status_code=404, detail="Producto no encontrado")
-    return {"message": f"Se agregaron {cantidad} unidades. Stock actual: {producto.stock}", "producto": producto}
-
-
-@app.post("/productos/{producto_id}/quitar-stock")
-def quitar_stock(producto_id: str, cantidad: int, session: Session = Depends(get_session)):
-    """Quitar stock de un producto (para ventas)"""
-    if cantidad <= 0:
-        raise HTTPException(status_code=400, detail="La cantidad debe ser positiva")
-
-    if not crud.verificar_stock_disponible(session, producto_id, cantidad):
-        raise HTTPException(status_code=400, detail="No hay suficiente stock disponible")
-
-    producto = crud.restar_stock_producto(session, producto_id, cantidad)
-    if not producto:
-        raise HTTPException(status_code=404, detail="Producto no encontrado")
-    return {"message": f"Se quitaron {cantidad} unidades. Stock actual: {producto.stock}", "producto": producto}
-
+async def obtener_productos(session: AsyncSession = Depends(get_session)):
+    productos = await crud.obtener_todos_productos(session)
+    categorias = {c.id_categoria: c.tipo for c in await crud.obtener_todas_categorias(session)}
+    productos_lista = [
+        {
+            "id_producto": p.id_producto,
+            "nombre": p.nombre,
+            "precio": p.precio,
+            "stock": p.stock,
+            "id_categoria": p.id_categoria,
+            "categoria_nombre": categorias.get(p.id_categoria, "Sin categoría")
+        }
+        for p in productos
+    ]
+    return {"productos": productos_lista, "total": len(productos_lista)}
 
 @app.delete("/productos/{producto_id}")
-def eliminar_producto(producto_id: str, session: Session = Depends(get_session)):
-    """Eliminar un producto"""
-    if crud.eliminar_producto(session, producto_id):
-        return {"message": "Producto eliminado exitosamente"}
-    else:
+async def eliminar_producto(producto_id: str, session: AsyncSession = Depends(get_session)):
+    if await crud.eliminar_producto(session, producto_id):
+        return {"message": "Producto eliminado"}
+    raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+
+# === MANEJO DE STOCK ===
+@app.put("/productos/{producto_id}/stock")
+async def actualizar_stock(producto_id: str, nueva_cantidad: int, session: AsyncSession = Depends(get_session)):
+    if nueva_cantidad < 0:
+        raise HTTPException(status_code=400, detail="Cantidad negativa no permitida")
+    producto = await crud.actualizar_stock_producto(session, producto_id, nueva_cantidad)
+    if not producto:
         raise HTTPException(status_code=404, detail="Producto no encontrado")
+    return {"message": f"Stock actualizado: {nueva_cantidad}", "producto": producto}
 
 
-# ===== ENDPOINTS CLIENTES =====
+# === CRUD DE CLIENTES ===
 @app.post("/clientes/", status_code=status.HTTP_201_CREATED)
-def crear_cliente(nombre: str, telefono: str, email: str, session: Session = Depends(get_session)):
-    """Crear un nuevo cliente"""
-    if crud.buscar_cliente_por_email(session, email):
+async def crear_cliente(nombre: str, telefono: str, email: str, session: AsyncSession = Depends(get_session)):
+    if await crud.buscar_cliente_por_email(session, email):
         raise HTTPException(status_code=400, detail="Ya existe un cliente con ese email")
-
-    try:
-        cliente = crud.crear_cliente(session, nombre, telefono, email)
-        return {"message": "Cliente creado exitosamente", "cliente": cliente}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error creando cliente: {str(e)}")
-
+    cliente = await crud.crear_cliente(session, nombre, telefono, email)
+    return {"message": "Cliente creado", "cliente": cliente}
 
 @app.get("/clientes/")
-def obtener_clientes(skip: int = 0, limit: int = 100, session: Session = Depends(get_session)):
-    """Obtener todos los clientes"""
-    clientes = crud.obtener_todos_clientes(session, skip, limit)
+async def obtener_clientes(session: AsyncSession = Depends(get_session)):
+    clientes = await crud.obtener_todos_clientes(session)
     return {"clientes": clientes, "total": len(clientes)}
 
 
-@app.get("/clientes/{cliente_id}")
-def obtener_cliente(cliente_id: int, session: Session = Depends(get_session)):
-    """Obtener un cliente específico"""
-    cliente = crud.obtener_cliente_por_id(session, cliente_id)
-    if not cliente:
-        raise HTTPException(status_code=404, detail="Cliente no encontrado")
-    return cliente
-
-
-@app.get("/clientes/email/{email}")
-def buscar_cliente_por_email(email: str, session: Session = Depends(get_session)):
-    """Buscar cliente por email"""
-    cliente = crud.buscar_cliente_por_email(session, email)
-    if not cliente:
-        raise HTTPException(status_code=404, detail="Cliente no encontrado")
-    return cliente
-
-
-@app.put("/clientes/{cliente_id}")
-def actualizar_cliente(cliente_id: int, nombre: str = None, telefono: str = None, email: str = None,
-                       session: Session = Depends(get_session)):
-    """Actualizar un cliente"""
-    cliente = crud.actualizar_cliente(session, cliente_id, nombre, telefono, email)
-    if not cliente:
-        raise HTTPException(status_code=404, detail="Cliente no encontrado")
-    return {"message": "Cliente actualizado exitosamente", "cliente": cliente}
-
-
-@app.delete("/clientes/{cliente_id}")
-def eliminar_cliente(cliente_id: int, session: Session = Depends(get_session)):
-    """Eliminar un cliente"""
-    if crud.eliminar_cliente(session, cliente_id):
-        return {"message": "Cliente eliminado exitosamente"}
-    else:
-        raise HTTPException(status_code=404, detail="Cliente no encontrado")
-
-
-# ===== ENDPOINTS PROVEEDORES =====
-@app.post("/proveedores/", status_code=status.HTTP_201_CREATED)
-def crear_proveedor(nit: str, nombre: str, contacto: str, direccion: str, ciudad: str,
-                    session: Session = Depends(get_session)):
-    """Crear un nuevo proveedor"""
-    try:
-        proveedor = crud.crear_proveedor(session, nit, nombre, direccion, ciudad, contacto)
-        return {"message": "Proveedor creado exitosamente", "proveedor": proveedor}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error creando proveedor: {str(e)}")
-
-
-@app.get("/proveedores/")
-def obtener_proveedores(skip: int = 0, limit: int = 100, session: Session = Depends(get_session)):
-    """Obtener todos los proveedores"""
-    proveedores = crud.obtener_todos_proveedores(session, skip, limit)
-    return {"proveedores": proveedores, "total": len(proveedores)}
-
-
-@app.get("/proveedores/{nit}")
-def obtener_proveedor(nit: str, session: Session = Depends(get_session)):
-    """Obtener un proveedor específico"""
-    proveedor = crud.obtener_proveedor_por_nit(session, nit)
-    if not proveedor:
-        raise HTTPException(status_code=404, detail="Proveedor no encontrado")
-    return proveedor
-
-
-# ===== ENDPOINTS DE UTILIDAD =====
-@app.get("/verificar/categoria/{categoria_id}")
-def verificar_categoria_existe(categoria_id: int, session: Session = Depends(get_session)):
-    """Verificar si una categoría existe"""
-    existe = crud.categoria_existe(session, categoria_id)
-    return {"categoria_id": categoria_id, "existe": existe}
-
-
+# === UTILIDADES ===
 @app.get("/verificar/producto/{producto_id}")
-def verificar_producto_existe(producto_id: str, session: Session = Depends(get_session)):
-    """Verificar si un producto existe"""
-    existe = crud.producto_existe(session, producto_id)
+async def verificar_producto_existe(producto_id: str, session: AsyncSession = Depends(get_session)):
+    existe = await crud.producto_existe(session, producto_id)
     return {"producto_id": producto_id, "existe": existe}
 
 
-@app.get("/verificar/stock/{producto_id}")
-def verificar_stock_disponible(producto_id: str, cantidad: int, session: Session = Depends(get_session)):
-    """Verificar si hay suficiente stock para una cantidad específica"""
-    disponible = crud.verificar_stock_disponible(session, producto_id, cantidad)
-    producto = crud.obtener_producto_por_id(session, producto_id)
-    stock_actual = producto.stock if producto else 0
-    return {
-        "producto_id": producto_id,
-        "cantidad_requerida": cantidad,
-        "stock_actual": stock_actual,
-        "stock_suficiente": disponible
-    }
-@app.put("/proveedores/{nit}")
-def actualizar_proveedor(nit:str, nombre: str = None, direccion:str = None, ciudad:str = None, contacto:str = None,
-                         session: Session = Depends(get_session)):
-    """Actualizar un proveedor"""
-    proveedor= crud.actualizar_proveedor(session,nit,nombre,direccion,ciudad,contacto)
-    if not proveedor:
-        raise HTTPException(status_code=404, detail="Proveedor no encontrado")
-    return {"message": "Proveedor actualizado exitosamente", "proveedor": proveedor}
-@app.delete("/proveedores/{nit}")
-def eliminar_proveedor(nit:str, session: Session = Depends(get_session)):
-    """Eliminar proveedor"""
-    if crud.eliminar_proveedor(session,nit):
-        return {"message": "Proveedor eliminado exitosamente"}
-    else:
-        raise HTTPException(status_code=404, detail="Proveedor no encontrado")
 if __name__ == "__main__":
     import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

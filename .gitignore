@@ -1,0 +1,5 @@
+.env
+.idea/swagger-settings.xml
+__pycache__/
+/data
+/others/*

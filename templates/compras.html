@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<main>
+  <h1 class="titulo">Gestión de Compras</h1>
+
+  <div class="menu-container" style="width:auto; height:auto; margin:100px auto; display:flex; gap:50px;">
+    <button class="menu-button" onclick="window.location.href='/ventas/compra'">
+      Hacer compra
+    </button>
+    <button class="menu-button" onclick="window.location.href='/ventas/hcompras'">
+      historial Compras
+    </button>
+  </div>
+
+  <div class="button-container" style="position:fixed; bottom:-400px; left:600px; margin:0;">
+    <button class="volver-button" onclick="window.location.href='/'">Atrás</button>
+  </div>
+</main>
+{% endblock %}
