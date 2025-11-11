@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
+
+{% include "navbar.html" %}
+
 <main>
 
   <h1 class="titulo">Lista de Proveedores</h1>
@@ -36,6 +39,7 @@
   <div class="button-container">
     <button class="volver-button" onclick="window.location.href='/'">Atrás</button>
     <button class="agregar-button" id="abrirModal">Agregar</button>
+    <button class="eliminados-button" onclick="window.location.href='/proveedoresE/'">Ver eliminados</button>
   </div>
 
 </main>
@@ -44,7 +48,7 @@
 <div id="modalOverlay" class="overlay">
   <div class="modal-contenido">
     <h2>Agregar Proveedor</h2>
-    <form id="formProveedor" class="form-modal" method="post" action="/proveedores/agregar">
+    <form id="formProveedor" class="form-modal" method="post" action="/proveedores/">
       <label for="nit">NIT:</label>
       <input type="text" id="nit" name="nit" required>
 
