@@ -21,6 +21,8 @@ class Cliente(SQLModel, table=True):
     nombre: str
     telefono: str
     email: str
+    activo: bool = Field(default=True)
+
 
 
 class Venta(SQLModel, table=True):
