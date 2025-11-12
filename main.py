@@ -6,6 +6,7 @@ import operations as crud
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
+from typing import List
 
 # === EVENTO DE VIDA (LIFESPAN) ===
 @asynccontextmanager
@@ -442,3 +443,84 @@ async def verificar_stock_disponible(producto_id: str, cantidad: int, session: A
         "stock_actual": stock_actual,
         "stock_suficiente": disponible
     }
+
+# === PÁGINA Y ENDPOINT DE HACER VENTA ===
+
+@app.get("/ventas/hacer_venta")
+async def pagina_hacer_venta(request: Request, session: AsyncSession = Depends(get_session)):
+    """Página para registrar una venta"""
+    clientes = await crud.obtener_todos_clientes(session)
+    productos = await crud.obtener_todos_productos(session)
+    return templates.TemplateResponse("hacer_venta.html", {
+        "request": request,
+        "clientes": clientes,
+        "productos": productos
+    })
+
+
+@app.post("/ventas/hacer")
+async def realizar_venta(request: Request, session: AsyncSession = Depends(get_session)):
+    """
+    Endpoint robusto que acepta múltiples productos.
+    Recibe form; usa form.getlist('producto_id') y form.getlist('cantidad').
+    """
+    form = await request.form()
+
+    # cliente
+    cliente_id = form.get("cliente_id")
+    if not cliente_id:
+        raise HTTPException(status_code=400, detail="Falta seleccionar cliente")
+
+    # obtenemos listas de productos y cantidades de manera robusta
+    producto_ids = form.getlist("producto_id")
+    cantidades_raw = form.getlist("cantidad")
+
+    # Si alguna vez el navegador envía con sufijo '[]' (por si quedó alguna plantilla antigua),
+    # también intentamos obtener esas keys:
+    if (not producto_ids or not cantidades_raw):
+        # buscar claves que contengan 'producto_id' o 'producto_id[]'
+        producto_ids = producto_ids or [v for k, v in form.items() if k.startswith("producto_id")]
+        cantidades_raw = cantidades_raw or [v for k, v in form.items() if k.startswith("cantidad")]
+
+    if not producto_ids or not cantidades_raw or len(producto_ids) == 0:
+        raise HTTPException(status_code=400, detail="Faltan productos en el formulario")
+
+    if len(producto_ids) != len(cantidades_raw):
+        raise HTTPException(status_code=400, detail="Productos y cantidades desbalanceadas")
+
+    # convertir cantidades a int y validar
+    try:
+        cantidades = [int(x) for x in cantidades_raw]
+    except Exception:
+        raise HTTPException(status_code=400, detail="Cantidad inválida en formulario")
+
+    # Validar cliente
+    cliente = await crud.obtener_cliente_por_id(session, int(cliente_id))
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+
+    # Construir lista de tuples (producto_id, cantidad) y validar stock
+    productos_para_venta = []
+    for pid, qty in zip(producto_ids, cantidades):
+        if qty <= 0:
+            raise HTTPException(status_code=400, detail=f"Cantidad inválida para producto {pid}")
+
+        producto = await crud.obtener_producto_por_id(session, pid)
+        if not producto:
+            raise HTTPException(status_code=404, detail=f"Producto no encontrado (id: {pid})")
+
+        if not await crud.verificar_stock_disponible(session, pid, qty):
+            raise HTTPException(status_code=400, detail=f"No hay suficiente stock para {producto.nombre}")
+
+        productos_para_venta.append((pid, qty))
+
+    # Llamar a operations.crear_venta_txt (que actualizará stock y generará el TXT)
+    nombre_archivo = await crud.crear_venta_txt(session, cliente.nombre, str(cliente.id_cliente), productos_para_venta)
+
+    # Renderizar vista de éxito mostrando lista de vendidos y ruta del archivo
+    return templates.TemplateResponse("venta_exitosa.html", {
+        "request": request,
+        "cliente": cliente,
+        "productos": productos_para_venta,
+        "archivo": nombre_archivo
+    })

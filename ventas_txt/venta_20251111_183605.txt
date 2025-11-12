@@ -1,0 +1,9 @@
+Creaciones Mechas
+Fecha y hora: 2025-11-11 18:36:04
+-----------------------------------
+Producto             Cantidad   Total
+-----------------------------------
+azucar               1        2500.0
+-----------------------------------
+Total a pagar: 2500.0
+Cliente: mechas - CC 4

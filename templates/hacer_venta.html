@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="titulo">Registrar Venta - Creaciones Mechas</h1>
+
+<div class="venta-container">
+  <form action="/ventas/hacer" method="post" class="form-venta" id="ventaForm">
+
+    <!-- CLIENTE -->
+    <div class="campo-form">
+      <label for="cliente_id">Cliente:</label>
+      <select name="cliente_id" id="cliente_id" required>
+        <option value="">Seleccione un cliente</option>
+        {% for c in clientes %}
+        <option value="{{ c.id_cliente }}">{{ c.nombre }} ({{ c.email }})</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <hr>
+
+    <!-- PRODUCTOS -->
+    <h3 style="color:#7a4e9b; font-family:'Lilita One', cursive;">Productos</h3>
+    <div id="productosContainer">
+      <div class="producto-item">
+        <label>Producto:</label>
+        <select name="producto_id" required>
+          <option value="">Seleccione un producto</option>
+          {% for p in productos %}
+          <option value="{{ p.id_producto }}">{{ p.nombre }} - Stock: {{ p.stock }} - ${{ p.precio }}</option>
+          {% endfor %}
+        </select>
+
+        <label>Cantidad:</label>
+        <input type="number" name="cantidad" min="1" value="1" required>
+
+        <button type="button" class="boton-secundario eliminar-producto">X</button>
+      </div>
+    </div>
+
+    <button type="button" id="agregarProducto" class="boton-secundario">+ Agregar otro producto</button>
+
+    <hr>
+
+    <!-- BOTÓN FINAL -->
+    <div style="text-align:center; margin-top:20px;">
+      <button type="submit" class="boton">Hacer venta</button>
+    </div>
+
+  </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const contenedor = document.getElementById("productosContainer");
+  const btnAgregar = document.getElementById("agregarProducto");
+
+  btnAgregar.addEventListener("click", () => {
+    const item = document.createElement("div");
+    item.classList.add("producto-item");
+    item.innerHTML = `
+      <label>Producto:</label>
+      <select name="producto_id" required>
+        <option value="">Seleccione un producto</option>
+        {% for p in productos %}
+        <option value="{{ p.id_producto }}">{{ p.nombre }} - Stock: {{ p.stock }} - ${{ p.precio }}</option>
+        {% endfor %}
+      </select>
+
+      <label>Cantidad:</label>
+      <input type="number" name="cantidad" min="1" value="1" required>
+
+      <button type="button" class="boton-secundario eliminar-producto">X</button>
+    `;
+    contenedor.appendChild(item);
+  });
+
+  contenedor.addEventListener("click", (e) => {
+    if (e.target.classList.contains("eliminar-producto")) {
+      e.target.parentElement.remove();
+    }
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,9 @@
+CREACIONES MECHAS
+Fecha y hora: 2025-11-11 18:20:03
+-----------------------------------
+Producto           Cant.   Total
+-----------------------------------
+hit mango 300ml   1      2000.00
+-----------------------------------
+TOTAL A PAGAR: 2000.00
+Cliente: mechas - CC 4

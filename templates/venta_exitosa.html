@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="titulo">✅ Venta realizada con éxito</h1>
+
+<div class="resumen-venta">
+  <h3>Cliente</h3>
+  <p><strong>Nombre:</strong> {{ cliente.nombre }}</p>
+  <p><strong>Documento:</strong> {{ cliente.id_cliente }}</p>
+
+  <h3>Productos vendidos</h3>
+  <table style="width:100%; border-collapse: collapse;">
+    <thead>
+      <tr style="background:#f1e6fb">
+        <th style="padding:8px; text-align:left;">Producto</th>
+        <th style="padding:8px; text-align:right;">Cantidad</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for pid, qty in productos %}
+      {# si quieres mostrar nombre en vez de id, operations ya lo guarda en txt; aquí mostramos id y qty #}
+      <tr>
+        <td style="padding:6px;">{{ pid }}</td>
+        <td style="padding:6px; text-align:right;">{{ qty }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p style="margin-top:15px;"><strong>Archivo generado:</strong> {{ archivo }}</p>
+
+  <div style="text-align:center; margin-top:20px;">
+    <a href="/ventas/hacer_venta" class="boton">Registrar otra venta</a>
+    <a href="/" class="boton" style="margin-left:10px;">Volver al inicio</a>
+  </div>
+</div>
+{% endblock %}

@@ -460,3 +460,105 @@ main h1 {
 body {
   padding-top: 50px;
   }
+/* === ESTILOS PARA LA PÁGINA HACER VENTA === */
+
+.venta-container {
+  background-color: rgba(255, 171, 206, 0.82);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  max-width: 800px;
+  margin: 30px auto;
+}
+
+.venta-container h2 {
+  font-family: "Lilita One", cursive;
+  color: #7a4e9b;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.form-venta label {
+  display: block;
+  font-weight: bold;
+  color: #7a4e9b;
+  margin-top: 10px;
+}
+
+.form-venta select,
+.form-venta input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+.form-venta button {
+  margin-top: 20px;
+  width: 100%;
+  background-color: #7a4e9b;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-family: "Lilita One", cursive;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.form-venta button:hover {
+  background-color: #9b5fb0;
+}
+
+.resumen-venta {
+  background: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 25px;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.resumen-venta strong {
+  color: #7a4e9b;
+}
+
+#total {
+  font-weight: bold;
+  color: #5c2c7a;
+  text-align: right;
+  margin-top: 10px;
+}
+/* === Botón secundario (para agregar/eliminar producto) === */
+.boton-secundario {
+  background-color: #d1a3ff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-left: 5px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.boton-secundario:hover {
+  background-color: #b57eff;
+}
+
+/* Contenedor de cada producto */
+.producto-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.campo-form {
+  margin-bottom: 15px;
+}

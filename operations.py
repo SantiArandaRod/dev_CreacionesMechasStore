@@ -3,7 +3,9 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
 from modelSQL import Categoria, Producto, Cliente, Proveedor, ProveedorBackup
-
+from datetime import datetime
+import os
+from modelSQL import Producto
 # ===== CATEGORÍAS =====
 
 async def crear_categoria(session: AsyncSession, tipo: str, codigo: str) -> Categoria:
@@ -298,3 +300,51 @@ async def verificar_stock_disponible(session: AsyncSession, producto_id: str, ca
     if producto:
         return producto.stock >= cantidad_requerida
     return False
+
+async def crear_venta_txt(session: AsyncSession, cliente_nombre: str, cliente_documento: str, productos_para_venta: list):
+    """
+    productos_para_venta: lista de tuples [(producto_id, cantidad), ...]
+    Actualiza stock y genera archivo TXT con nombre, subtotales y total.
+    Devuelve la ruta del archivo generado.
+    """
+    fecha_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    carpeta_ventas = "ventas_txt"
+    os.makedirs(carpeta_ventas, exist_ok=True)
+
+    total_general = 0.0
+    lineas = []
+
+    # Procesar cada item: buscar producto por id, calcular subtotal, restar stock
+    for producto_id, cantidad in productos_para_venta:
+        result = await session.execute(select(Producto).where(Producto.id_producto == producto_id))
+        producto = result.scalars().first()
+        if not producto:
+            # saltar si no existe (normalmente ya validado antes)
+            continue
+
+        subtotal = producto.precio * cantidad
+        total_general += subtotal
+        lineas.append((producto.nombre, cantidad, subtotal))
+
+        # Actualizar stock en objeto
+        producto.stock = producto.stock - cantidad
+        session.add(producto)
+
+    # Commit de todos los cambios en DB (stocks)
+    await session.commit()
+
+    # Crear archivo TXT
+    nombre_archivo = os.path.join(carpeta_ventas, f"venta_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
+    with open(nombre_archivo, "w", encoding="utf-8") as f:
+        f.write("CREACIONES MECHAS\n")
+        f.write(f"Fecha y hora: {fecha_hora}\n")
+        f.write("="*40 + "\n")
+        f.write(f"{'Producto':<20}{'Cant.':>7}{'Total':>13}\n")
+        f.write("-"*40 + "\n")
+        for nombre, cant, subtotal in lineas:
+            f.write(f"{nombre:<20}{str(cant):>7}{subtotal:>13.2f}\n")
+        f.write("-"*40 + "\n")
+        f.write(f"{'TOTAL A PAGAR:':<20}{total_general:>20.2f}\n\n")
+        f.write(f"Cliente: {cliente_nombre} - Documento: {cliente_documento}\n")
+
+    return nombre_archivo

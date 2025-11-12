@@ -1,0 +1,9 @@
+CREACIONES MECHAS
+Fecha y hora: 2025-11-11 18:21:07
+-----------------------------------
+Producto           Cant.   Total
+-----------------------------------
+hit mora500ml     2      8000.00
+-----------------------------------
+TOTAL A PAGAR: 8000.00
+Cliente: mechas - CC 4
