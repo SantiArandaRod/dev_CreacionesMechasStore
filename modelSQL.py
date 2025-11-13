@@ -15,6 +15,13 @@ class Producto(SQLModel, table=True):
     stock: int
     id_categoria: int = Field(foreign_key="categoria.id_categoria")
 
+class ProductoBackup(SQLModel, table=True):
+    id_producto: str = Field(default=None, primary_key=True)
+    nombre: str
+    precio: float
+    stock: int
+    id_categoria: int = Field(foreign_key="categoria.id_categoria")
+
 
 class Cliente(SQLModel, table=True):
     id_cliente: int = Field(default=None, primary_key=True)

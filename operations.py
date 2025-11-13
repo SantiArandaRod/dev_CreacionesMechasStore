@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
-from modelSQL import Categoria, Producto, Cliente, Proveedor, ProveedorBackup
+from modelSQL import *
 from datetime import datetime
 import os
 from modelSQL import Producto
@@ -143,13 +143,51 @@ async def restar_stock_producto(session: AsyncSession, producto_id: str, cantida
         return producto
     return None
 
-async def eliminar_producto(session: AsyncSession, producto_id: str) -> bool:
+async def mover_producto(session: AsyncSession, producto_id: str) -> bool:
     producto = await session.get(Producto, producto_id)
-    if producto:
-        await session.delete(producto)
-        await session.commit()
-        return True
-    return False
+    if not producto:
+        return False
+
+    producto_backup = ProductoBackup(
+        id_producto=producto.id_producto,
+        nombre=producto.nombre,
+        precio=producto.precio,
+        stock=producto.stock,
+        id_categoria=producto.id_categoria
+    )
+
+    session.add(producto_backup)
+    await session.commit()
+    await session.refresh(producto_backup)
+
+    await session.delete(producto)
+    await session.commit()
+
+    return True
+
+async def obtener_productos_eliminados(session: AsyncSession):
+    result = await session.execute(select(ProductoBackup))
+    return result.scalars().all()
+
+
+async def recuperar_producto(session: AsyncSession, producto_id: str):
+    producto_backup = await session.get(ProductoBackup, producto_id)
+    if not producto_backup:
+        return False
+
+    producto = Producto(
+        id_producto=producto_backup.id_producto,
+        nombre=producto_backup.nombre,
+        precio=producto_backup.precio,
+        stock=producto_backup.stock,
+        id_categoria=producto_backup.id_categoria
+    )
+
+    session.add(producto)
+    await session.delete(producto_backup)
+    await session.commit()
+
+    return True
 
 # ===== CLIENTES =====
 

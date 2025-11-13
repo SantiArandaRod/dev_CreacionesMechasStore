@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% include "navbar.html" %}
+
+<main style="margin-top: 70px;">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <button class="volver-top" onclick="window.location.href='/productos/pagina'">⟵ Volver</button>
+    <h1 class="titulo" style="margin:0;">Productos Eliminados</h1>
+  </div>
+
+  <table class="tabla-productos" style="margin-top:20px;">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Precio</th>
+        <th>Stock</th>
+        <th>Categoría</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if productos|length == 0 %}
+      <tr>
+        <td colspan="5" style="text-align:center; padding:12px;">
+          No hay productos eliminados.
+        </td>
+      </tr>
+      {% else %}
+      {% for producto in productos %}
+      <tr>
+        <td>{{ producto.nombre }}</td>
+        <td>{{ producto.precio }}</td>
+        <td>{{ producto.stock }}</td>
+        <td>{{ producto.id_categoria }}</td>
+        <td>
+          <form action="/productos/recuperar/{{ producto.id_producto }}" method="post" style="display:inline;">
+            <button type="submit" class="btn-recuperar">Recuperar</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+      {% endif %}
+    </tbody>
+  </table>
+
+  <div class="button-container">
+    <button class="volver-button" onclick="window.location.href='/'">Inicio</button>
+  </div>
+
+</main>
+
+{% endblock %}
