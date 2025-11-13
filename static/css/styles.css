@@ -191,6 +191,25 @@ main h1 {
   background-color: #c57aff;
   color: white;
 }
+.tabla-sin-bordes {
+    /* Ensures the table itself has no borders */
+    border-collapse: collapse;
+    border: none;
+}
+
+.tabla-sin-bordes th,
+.tabla-sin-bordes td {
+    /* Removes borders from all table header and data cells */
+    border: none;
+    /* You might want padding for visual spacing */
+    padding: 8px 15px;
+    text-align: left;
+}
+
+.tabla-sin-bordes thead th {
+    /* Style for the header row */
+    border-bottom: 2px solid #ccc; /* Optional: a subtle line only under the header */
+}
 
 .btn-eliminar {
   background-color: #d9534f;
