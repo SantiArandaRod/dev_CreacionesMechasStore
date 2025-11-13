@@ -285,10 +285,12 @@ async def crear_cliente(
     session: AsyncSession = Depends(get_session)
 ):
     if await crud.buscar_cliente_por_email(session, email):
-        raise HTTPException(status_code=400, detail="Ya existe un cliente con ese email")
+        return RedirectResponse("/clientes/pagina?error=duplicado", status_code=303)
 
-    cliente = await crud.crear_cliente(session, nombre, telefono, email)
-    return {"message": "Cliente creado", "cliente": cliente}
+    await crud.crear_cliente(session, nombre, telefono, email)
+    return RedirectResponse("/clientes/pagina", status_code=303)
+
+
 @app.get("/clientes/")
 async def obtener_clientes(session: AsyncSession = Depends(get_session)):
     clientes = await crud.obtener_todos_clientes(session)
@@ -314,13 +316,14 @@ async def buscar_cliente_por_email(email: str, session: AsyncSession = Depends(g
 
 
 @app.put("/clientes/{cliente_id}")
-async def actualizar_cliente(cliente_id: int, nombre: str = None, telefono: str = None, email: str = None,
-                       session: AsyncSession = Depends(get_session)):
-    """Actualizar un cliente"""
+async def actualizar_cliente(
+    cliente_id: int,
+    nombre: str = Form(None),
+    telefono: str = Form(None),
+    email: str = Form(None),
+    session: AsyncSession = Depends(get_session)
+):
     cliente = await crud.actualizar_cliente(session, cliente_id, nombre, telefono, email)
-    if not cliente:
-        raise HTTPException(status_code=404, detail="Cliente no encontrado")
-    return {"message": "Cliente actualizado exitosamente", "cliente": cliente}
 
 
 @app.post("/clientes/{cliente_id}/inactivar")
@@ -435,8 +438,51 @@ async def verificar_categoria_existe(categoria_id: int, session: AsyncSession = 
     """Verificar si una categoría existe"""
     existe = await crud.categoria_existe(session, categoria_id)
     return {"categoria_id": categoria_id, "existe": existe}
+@app.get("/compras/nueva")
+async def mostrar_formulario_compra(request: Request, session: AsyncSession = Depends(get_session)):
+    proveedores = await crud.obtener_todos_proveedores(session)
+    productos = await crud.obtener_todos_productos(session)
+    return templates.TemplateResponse("compras_nueva.html", {
+        "request": request,
+        "proveedores": proveedores,
+        "productos": productos
+    })
+@app.post("/compras/nueva")
+async def registrar_nueva_compra(
+    request: Request,
+    nit_proveedor: str = Form(...),
+    productos_ids: list[str] = Form(...),
+    cantidades: list[int] = Form(...),
+    precios: list[float] = Form(...),
+    session: AsyncSession = Depends(get_session)
+):
+    productos_comprados = [
+        (productos_ids[i], cantidades[i], precios[i]) for i in range(len(productos_ids))
+    ]
 
+    await crud.registrar_compra(session, nit_proveedor, productos_comprados)
 
+    return RedirectResponse(url="/compras/historial", status_code=303)
+@app.get("/compras/historial")
+async def historial_compras(request: Request, session: AsyncSession = Depends(get_session)):
+    compras = await crud.obtener_todas_compras(session)
+    return templates.TemplateResponse("compras_historial.html", {
+        "request": request,
+        "compras": compras
+    })
+@app.get("/compras/detalle/{id_compra}")
+@app.get("/compras/detalle/{id_compra}")
+async def detalle_compra(request: Request, id_compra: int, session: AsyncSession = Depends(get_session)):
+    data = await crud.obtener_detalle_compra(session, id_compra)
+    if not data:
+        raise HTTPException(status_code=404, detail="Compra no encontrada")
+
+    return templates.TemplateResponse("compras_detalle.html", {
+        "request": request,
+        "compra": data["compra"],
+        "detalles": data["detalles"],
+        "total": data["total"]
+    })
 @app.get("/verificar/producto/{producto_id}")
 async def verificar_producto_existe(producto_id: str, session: AsyncSession = Depends(get_session)):
     existe = await crud.producto_existe(session, producto_id)
