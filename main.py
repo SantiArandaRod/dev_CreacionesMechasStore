@@ -200,7 +200,7 @@ async def obtener_productos(session: AsyncSession = Depends(get_session)):
 
 @app.delete("/productos/{producto_id}")
 async def eliminar_producto(producto_id: str, session: AsyncSession = Depends(get_session)):
-    if await crud.eliminar_producto(session, producto_id):
+    if await crud.mover_producto(session, producto_id):
         return {"message": "Producto eliminado"}
     raise HTTPException(status_code=404, detail="Producto no encontrado")
 # === CRUD DE PROVEEDORES ===
@@ -238,7 +238,19 @@ async def eliminar_proveedor(nit: str, session: AsyncSession = Depends(get_sessi
         return {"message": "Proveedor movido al backup"}
     raise HTTPException(status_code=404, detail="Proveedor no encontrado")
 
-
+@app.get("/productosE/")
+async def pagina_productos_eliminados(request: Request, session: AsyncSession = Depends(get_session)):
+    """Muestra los productos eliminados (guardados en ProductoBackup)."""
+    productos_eliminados = await crud.obtener_productos_eliminados(session)
+    return templates.TemplateResponse(
+        "productos_eliminados.html",
+        {"request": request, "productos": productos_eliminados}
+    )
+@app.post("/productos/recuperar/{producto_id}")
+async def recuperar_producto(producto_id: str, session: AsyncSession = Depends(get_session)):
+    """Restaura un producto desde la tabla ProductoBackup."""
+    await crud.recuperar_producto(session, producto_id)
+    return RedirectResponse(url="/productosE/", status_code=303)
 @app.get("/proveedores/backup/")
 async def obtener_proveedores_backup(session: AsyncSession = Depends(get_session)):
     """Devuelve los proveedores eliminados (backup)"""
