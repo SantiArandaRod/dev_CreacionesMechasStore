@@ -40,11 +40,11 @@
         </td>
         <td>
           {% if c.activo %}
-          <form action="/clientes/{{ c.id }}/inactivar" method="post" style="display:inline;">
+          <form action="/clientes/{{ c.id_cliente }}/inactivar" method="post" style="display:inline;">
             <button type="submit" class="btn-eliminar">Inactivar</button>
           </form>
           {% else %}
-          <form action="/clientes/{{ c.id }}/activar" method="post" style="display:inline;">
+          <form action="/clientes/{{ c.id_cliente }}/activar" method="post" style="display:inline;">
             <button type="submit" class="btn-guardar">Activar</button>
           </form>
           {% endif %}
