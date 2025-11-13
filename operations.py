@@ -191,12 +191,17 @@ async def recuperar_producto(session: AsyncSession, producto_id: str):
 
 # ===== CLIENTES =====
 
-async def crear_cliente(session: AsyncSession, nombre: str, telefono: str, email: str) -> Cliente:
-    cliente = Cliente(nombre=nombre, telefono=telefono, email=email)
-    session.add(cliente)
+async def crear_cliente(session: AsyncSession, nombre: str, telefono: str, email: str):
+    nuevo_cliente = Cliente(
+        nombre=nombre.strip(),
+        telefono=telefono.strip(),
+        email=email.strip().lower(),
+    )
+    session.add(nuevo_cliente)
     await session.commit()
-    await session.refresh(cliente)
-    return cliente
+    await session.refresh(nuevo_cliente)
+    return nuevo_cliente
+
 
 async def obtener_cliente_por_id(session: AsyncSession, cliente_id: int) -> Optional[Cliente]:
     return await session.get(Cliente, cliente_id)
@@ -206,21 +211,47 @@ async def obtener_todos_clientes(session: AsyncSession):
     result = await session.execute(statement)
     return result.scalars().all()
 
-async def buscar_cliente_por_email(session: AsyncSession, email: str) -> Optional[Cliente]:
-    result = await session.execute(select(Cliente).where(Cliente.email == email))
-    return result.scalars().first()
+async def buscar_cliente_por_email(session: AsyncSession, email: str):
+    stmt = select(Cliente).where(Cliente.email == email.strip().lower())
+    result = await session.execute(stmt)
+    return result.first()
 
-async def actualizar_cliente(session: AsyncSession, cliente_id: int, nombre: str = None, telefono: str = None, email: str = None) -> Optional[Cliente]:
+async def actualizar_cliente(
+    session,
+    cliente_id: int,
+    nombre: str = None,
+    telefono: str = None,
+    email: str = None,
+    activo: bool = None
+):
+    from fastapi.logger import logger
+
     cliente = await session.get(Cliente, cliente_id)
-    if cliente:
-        if nombre is not None:
-            cliente.nombre = nombre
-        if telefono is not None:
-            cliente.telefono = telefono
-        if email is not None:
-            cliente.email = email
+    if not cliente:
+        logger.warning(f"Cliente {cliente_id} no encontrado")
+        return None
+
+    logger.info(f"Antes de actualizar cliente {cliente_id}: {cliente}")
+
+    if nombre is not None:
+        cliente.nombre = nombre
+    if telefono is not None:
+        cliente.telefono = telefono
+    if email is not None:
+        cliente.email = email
+    if activo is not None:
+        cliente.activo = activo
+
+    try:
+        session.add(cliente)
         await session.commit()
         await session.refresh(cliente)
+        logger.info(f"Cliente actualizado correctamente: {cliente}")
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Error al actualizar cliente: {e}")
+        raise
+
     return cliente
 
 async def eliminar_cliente(session: AsyncSession, cliente_id: int) -> bool:
@@ -386,3 +417,115 @@ async def crear_venta_txt(session: AsyncSession, cliente_nombre: str, cliente_do
         f.write(f"Cliente: {cliente_nombre} - Documento: {cliente_documento}\n")
 
     return nombre_archivo
+
+# ===== COMPRAS =====
+
+async def registrar_compra(
+    session: AsyncSession,
+    nit_proveedor: str,
+    productos_comprados: list
+):
+    """
+    Registra una compra en la base de datos y actualiza stock.
+    productos_comprados: lista de tuples [(id_producto, cantidad, precio_unidad), ...]
+    """
+
+    # Crear registro de la compra
+    compra = Compra(fecha=datetime.now(), nit=nit_proveedor)
+    session.add(compra)
+    await session.commit()
+    await session.refresh(compra)
+
+    total_compra = 0.0
+
+    for id_producto, cantidad, precio_unidad in productos_comprados:
+        detalle = Detalle_Compra(
+            id_compra=compra.id_compra,
+            id_producto=id_producto,
+            cantidad=cantidad,
+            precio_unidad=precio_unidad
+        )
+        session.add(detalle)
+
+        # Actualizar stock del producto
+        producto = await session.get(Producto, id_producto)
+        if producto:
+            producto.stock += cantidad
+            session.add(producto)
+
+        total_compra += cantidad * precio_unidad
+
+    await session.commit()
+
+    # Registrar en archivo TXT para control contable
+    carpeta_compras = "compras_txt"
+    os.makedirs(carpeta_compras, exist_ok=True)
+
+    nombre_archivo = os.path.join(
+        carpeta_compras,
+        f"compra_{compra.id_compra}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+    )
+
+    with open(nombre_archivo, "w", encoding="utf-8") as f:
+        f.write("REGISTRO DE COMPRA - CREACIONES MECHAS\n")
+        f.write("=" * 45 + "\n")
+        f.write(f"Proveedor NIT: {nit_proveedor}\n")
+        f.write(f"Fecha: {compra.fecha.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write("-" * 45 + "\n")
+        f.write(f"{'Producto':<20}{'Cant.':>7}{'Precio':>10}{'Subtotal':>10}\n")
+        f.write("-" * 45 + "\n")
+
+        for id_producto, cantidad, precio_unidad in productos_comprados:
+            subtotal = cantidad * precio_unidad
+            f.write(f"{id_producto:<20}{cantidad:>7}{precio_unidad:>10.2f}{subtotal:>10.2f}\n")
+
+        f.write("-" * 45 + "\n")
+        f.write(f"{'TOTAL COMPRA:':<20}{total_compra:>25.2f}\n")
+
+    return compra, nombre_archivo
+
+async def obtener_detalle_compra(session: AsyncSession, id_compra: int):
+    """
+    Retorna la información de una compra (encabezado y detalles de productos).
+    """
+    # Obtener la compra principal
+    compra = await session.get(Compra, id_compra)
+    if not compra:
+        return None
+
+    # Obtener los detalles con los productos relacionados
+    query = (
+        select(Detalle_Compra, Producto)
+        .join(Producto, Detalle_Compra.id_producto == Producto.id_producto)
+        .where(Detalle_Compra.id_compra == id_compra)
+    )
+    result = await session.execute(query)
+    detalles = result.all()  # Lista de tuplas [(Detalle_Compra, Producto), ...]
+
+    # Calcular el total de la compra
+    total = sum(detalle.cantidad * detalle.precio_unidad for detalle, _ in detalles)
+
+    return {"compra": compra, "detalles": detalles, "total": total}
+async def obtener_todas_compras(session: AsyncSession):
+    result = await session.execute(select(Compra))
+    compras = result.scalars().all()
+
+    datos = []
+    for c in compras:
+        proveedor = await session.get(Proveedor, c.nit)
+        detalles = await session.execute(select(Detalle_Compra).where(Detalle_Compra.id_compra == c.id_compra))
+        detalles_lista = detalles.scalars().all()
+
+        total = sum(d.cantidad * d.precio_unidad for d in detalles_lista)
+
+        datos.append({
+            "id_compra": c.id_compra,
+            "fecha": c.fecha,
+            "proveedor_nombre": proveedor.nombre if proveedor else "Desconocido",
+            "total": total
+        })
+    return datos
+
+async def obtener_detalles_por_compra(session: AsyncSession, id_compra: int) -> List[Detalle_Compra]:
+    result = await session.execute(select(Detalle_Compra).where(Detalle_Compra.id_compra == id_compra))
+    return result.scalars().all()
