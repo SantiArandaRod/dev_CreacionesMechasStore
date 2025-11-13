@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% include "navbar.html" %}
+
+<main style="margin-top:70px;">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <button class="volver-top" onclick="window.location.href='/'">⟵ Volver</button>
+    <h1 class="titulo" style="margin:0;">Registrar Compra</h1>
+  </div>
+
+  <form method="post" action="/compras/nueva" style="margin-top:20px;">
+    <label>Proveedor:</label>
+    <select name="nit_proveedor" required>
+      <option value="">-- Selecciona un proveedor --</option>
+      {% for p in proveedores %}
+      <option value="{{ p.nit }}">{{ p.nombre }} ({{ p.nit }})</option>
+      {% endfor %}
+    </select>
+
+    <h3 style="margin-top:20px;">Productos Comprados</h3>
+    <table class="tabla-proveedores">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Cantidad</th>
+          <th>Precio Unidad</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-productos">
+        <tr>
+          <td>
+            <select name="productos_ids">
+              {% for p in productos %}
+              <option value="{{ p.id_producto }}">{{ p.nombre }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td><input type="number" name="cantidades" min="1" value="1" required></td>
+          <td><input type="number" step="0.01" name="precios" required></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button type="button" onclick="agregarFila()">➕ Añadir producto</button>
+    <button type="submit" class="btn-guardar">Registrar Compra</button>
+  </form>
+
+  <script>
+    function agregarFila() {
+      const tbody = document.getElementById("tabla-productos");
+      const fila = tbody.rows[0].cloneNode(true);
+      fila.querySelectorAll("input").forEach(input => input.value = "");
+      tbody.appendChild(fila);
+    }
+  </script>
+</main>
+
+{% endblock %}

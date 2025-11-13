@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% include "navbar.html" %}
+
+<main style="margin-top: 70px;">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <button class="volver-top" onclick="window.location.href='/compras/pagina'">⟵ Volver</button>
+    <h1 class="titulo" style="margin:0;">Historial de Compras</h1>
+  </div>
+
+  <table class="tabla-compras" style="margin-top:20px; width:100%; border-collapse:collapse; text-align:center;">
+    <thead style="background-color:#f2f2f2;">
+      <tr>
+        <th>ID Compra</th>
+        <th>Proveedor</th>
+        <th>Fecha</th>
+        <th>Total</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if compras|length == 0 %}
+      <tr>
+        <td colspan="5" style="text-align:center; padding:12px;">
+          No hay compras registradas.
+        </td>
+      </tr>
+      {% else %}
+      {% for compra in compras %}
+      <tr>
+        <td>{{ compra.id_compra }}</td>
+        <td>{{ compra.proveedor_nombre }}</td>
+        <td>{{ compra.fecha.strftime("%Y-%m-%d") if compra.fecha else "Sin fecha" }}</td>
+        <td>${{ "%.2f"|format(compra.total) }}</td>
+        <td>
+          <form action="/compras/detalle/{{ compra.id_compra }}" method="get" style="display:inline;">
+            <button type="submit" class="btn-detalle">Ver Detalle</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+      {% endif %}
+    </tbody>
+  </table>
+
+  <div class="button-container" style="margin-top:30px;">
+    <button class="volver-button" onclick="window.location.href='/'">Inicio</button>
+  </div>
+</main>
+
+{% endblock %}

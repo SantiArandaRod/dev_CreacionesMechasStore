@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+{% include "navbar.html" %}
+
+<main style="margin-top:70px;">
+  <h1 class="titulo">Detalle de Compra #{{ compra.id_compra }}</h1>
+  <p><strong>Fecha:</strong> {{ compra.fecha }}</p>
+  <p><strong>Proveedor NIT:</strong> {{ compra.nit }}</p>
+
+  <table class="tabla-detalle" style="margin-top:20px; width:100%;">
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Cantidad</th>
+        <th>Precio Unidad</th>
+        <th>Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for detalle, producto in detalles %}
+      <tr>
+        <td>{{ producto.nombre }}</td>
+        <td>{{ detalle.cantidad }}</td>
+        <td>${{ "%.2f"|format(detalle.precio_unidad) }}</td>
+        <td>${{ "%.2f"|format(detalle.cantidad * detalle.precio_unidad) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h3 style="margin-top:20px;">Total: ${{ "%.2f"|format(total) }}</h3>
+
+  <div class="button-container">
+    <button class="volver-button" onclick="window.location.href='/compras/historial'">Volver</button>
+  </div>
+</main>
+
+{% endblock %}
