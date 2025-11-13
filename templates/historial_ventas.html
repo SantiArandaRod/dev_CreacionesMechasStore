@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<main>
+  <h1 class="titulo">📜 Historial de Ventas</h1>
+
+  {% if ventas %}
+    <div class="venta-container" style="max-width: 1000px; margin: 20px auto;">
+      <table class="tabla-proveedores" style="width:100%;">
+        <thead>
+          <tr>
+            <th style="width:20%;">Archivo</th>
+            <th style="width:80%; text-align:left;">Contenido</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for venta in ventas %}
+          <tr class="{{ 'fila-inactiva' if venta.contenido == '' else '' }}">
+            <td style="font-weight:700; vertical-align: top; padding: 16px;">
+              {{ venta.nombre }}
+              {% if venta.fecha %}
+                <div style="font-size: 0.85rem; margin-top:6px; font-family: 'Poppins', sans-serif; color: #333;">
+                  {{ venta.fecha }}
+                </div>
+              {% endif %}
+            </td>
+            <td style="padding: 12px; text-align:left;">
+              <div class="resumen-venta" style="white-space: pre-wrap; font-family: 'Poppins', sans-serif; font-size: 14px;">
+                {{ venta.contenido }}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div style="max-width:800px; margin: 40px auto;">
+      <div class="alerta-exito" style="background-color:#fff3cd; color:#856404;">
+        No hay ventas registradas.
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="button-container">
+    <button class="volver-button" onclick="window.location.href='/'">Volver</button>
+  </div>
+</main>
+{% endblock %}

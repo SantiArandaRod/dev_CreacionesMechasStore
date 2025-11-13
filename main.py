@@ -6,7 +6,7 @@ import operations as crud
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
-from typing import List
+import os
 
 # === EVENTO DE VIDA (LIFESPAN) ===
 @asynccontextmanager
@@ -524,3 +524,21 @@ async def realizar_venta(request: Request, session: AsyncSession = Depends(get_s
         "productos": productos_para_venta,
         "archivo": nombre_archivo
     })
+@app.get("/ventas/historial_ventas")
+async def historial_ventas(request: Request):
+    ruta_ventas = "ventas_txt"
+    ventas = []
+
+    # Si la carpeta existe, leer los archivos .txt
+    if os.path.exists(ruta_ventas):
+        for archivo in os.listdir(ruta_ventas):
+            if archivo.endswith(".txt"):
+                ruta_archivo = os.path.join(ruta_ventas, archivo)
+                with open(ruta_archivo, "r", encoding="utf-8") as f:
+                    contenido = f.read()
+                ventas.append({"nombre": archivo, "contenido": contenido})
+
+    return templates.TemplateResponse(
+        "historial_ventas.html",
+        {"request": request, "ventas": ventas}
+    )
