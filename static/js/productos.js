@@ -193,6 +193,27 @@ document.addEventListener("DOMContentLoaded", () => {
       cont.appendChild(btn);
     }
   }
+// ============================
+//   ALERTA STOCK BAJO
+// ============================
+function mostrarAlertasStock() {
+  const alertas = window.alertasStock;
+
+  if (!alertas || alertas.length === 0) return;
+
+  let mensaje = "";
+
+  alertas.forEach(p => {
+    mensaje += `⚠️ El producto "${p.nombre}" tiene solo ${p.stock} unidades en stock.\n`;
+  });
+
+  alert(mensaje);
+}
+
+setTimeout(() => {
+  mostrarAlertasStock();
+}, 300);
+
 
   // ============================
   //    CARGAR PRIMERA PAGINA

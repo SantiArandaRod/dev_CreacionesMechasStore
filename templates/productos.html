@@ -31,7 +31,7 @@
     <div style="display:flex; gap:10px;">
       <button class="volver-button" onclick="window.location.href='/'">Atrás</button>
       <button class="agregar-button" id="abrirModalProducto">Agregar</button>
-        <button class="volver-button" onclick="window.location.href='/productosE/'">Productos Eliminados</button>
+      <button class="volver-button" onclick="window.location.href='/productosE/'">Productos Eliminados</button>
     </div>
 
   </div>
@@ -103,5 +103,13 @@
 {% endblock %}
 
 {% block scripts %}
+
 <script src="{{ url_for('static', path='js/productos.js') }}"></script>
+
+
+<script>
+  window.alertasStock = JSON.parse('{{ alertas | tojson | safe }}');
+</script>
+
+
 {% endblock %}

@@ -52,14 +52,13 @@ async def crear_producto(session: AsyncSession, id_producto: str, nombre: str, p
 
 async def obtener_producto_por_id(session: AsyncSession, producto_id: str) -> Optional[Producto]:
     return await session.get(Producto, producto_id)
+
 async def buscar_productos(session: AsyncSession, query: str) -> List[Producto]:
     patron = f"%{query}%"
-
     statement = select(Producto).where(
         (Producto.nombre.ilike(patron)) |
         (Producto.id_producto.ilike(patron))
     )
-
     result = await session.execute(statement)
     return result.scalars().all()
 
@@ -70,6 +69,7 @@ async def obtener_todos_productos(session: AsyncSession, skip: int = 0, limit: i
 async def obtener_productos_por_categoria(session: AsyncSession, categoria_id: int):
     result = await session.execute(select(Producto).where(Producto.id_categoria == categoria_id))
     return result.scalars().all()
+
 async def obtener_productos_filtrados(session, categoria: int = 0, search: str = "") -> List[Producto]:
     stmt = select(Producto)
 
@@ -82,13 +82,11 @@ async def obtener_productos_filtrados(session, categoria: int = 0, search: str =
     result = await session.execute(stmt)
     return result.scalars().all()
 
-
 def paginar_lista(lista, page: int, page_size: int):
     total = len(lista)
     start = (page - 1) * page_size
     end = start + page_size
     return lista[start:end], total
-
 
 async def formatear_productos(session, productos):
     categorias = {c.id_categoria: c.tipo for c in await obtener_todas_categorias(session)}
@@ -103,6 +101,7 @@ async def formatear_productos(session, productos):
         }
         for p in productos
     ]
+
 async def actualizar_producto(session: AsyncSession, producto_id: str, nombre: str = None, precio: float = None, stock: int = None, id_categoria: int = None) -> Optional[Producto]:
     producto = await session.get(Producto, producto_id)
     if producto:
@@ -169,7 +168,6 @@ async def obtener_productos_eliminados(session: AsyncSession):
     result = await session.execute(select(ProductoBackup))
     return result.scalars().all()
 
-
 async def recuperar_producto(session: AsyncSession, producto_id: str):
     producto_backup = await session.get(ProductoBackup, producto_id)
     if not producto_backup:
@@ -189,7 +187,15 @@ async def recuperar_producto(session: AsyncSession, producto_id: str):
 
     return True
 
+
+# === ALERTA: productos con stock menor a 3 ===
+async def obtener_productos_bajo_stock(session: AsyncSession):
+    stmt = select(Producto).where(Producto.stock < 3)
+    result = await session.execute(stmt)
+    return result.scalars().all()
+
 # ===== CLIENTES =====
+
 
 async def crear_cliente(session: AsyncSession, nombre: str, telefono: str, email: str):
     nuevo_cliente = Cliente(

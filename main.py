@@ -30,12 +30,17 @@ async def home(request: Request):
 # === PÁGINAS HTML ===
 
 @app.get("/productos/pagina")
+@app.get("/productos/pagina")
 async def pagina_productos(request: Request, session: AsyncSession = Depends(get_session)):
     productos = await crud.obtener_todos_productos(session)
     categorias = await crud.obtener_todas_categorias(session)
     categorias_dict = {c.id_categoria: c.tipo for c in categorias}
-    productos_lista = [
-        {
+
+    productos_lista = []
+    productos_bajo_stock = []
+
+    for p in productos:
+        producto_formateado = {
             "id_producto": p.id_producto,
             "nombre": p.nombre,
             "precio": p.precio,
@@ -43,13 +48,21 @@ async def pagina_productos(request: Request, session: AsyncSession = Depends(get
             "id_categoria": p.id_categoria,
             "categoria_nombre": categorias_dict.get(p.id_categoria, "Sin categoría")
         }
-        for p in productos
-    ]
-    return templates.TemplateResponse("productos.html", {
-        "request": request,
-        "productos": productos_lista,
-        "categorias": categorias
-    })
+
+        productos_lista.append(producto_formateado)
+
+        if p.stock < 3:
+            productos_bajo_stock.append(producto_formateado)
+
+    return templates.TemplateResponse(
+        "productos.html",
+        {
+            "request": request,
+            "productos": productos_lista,
+            "categorias": categorias,
+            "alertas": productos_bajo_stock
+        }
+    )
 
 @app.get("/productos/buscar")
 async def buscar_productos_endpoint(
